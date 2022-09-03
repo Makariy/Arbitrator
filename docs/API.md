@@ -7,12 +7,20 @@
 
 ### KuCoin 
 ##### Base url: https://api.kucoin.com
+
 Все запросы content_type="application/json"
 
 (https://docs.kucoin.com/#request-rate-limit) <br/>
 На KuCoin есть возможность получения бидов как GET запросами,
 так и через WebSocket. WebSocket обновляется раз в 100 мс. 
 
+WebSocket - здесь всё замысловато. Сначала идёт POST запрос на 
+https://api.kucoin.com/api/v1/bullet-public, и из ответа
+вытаскивается token и endpoint. Потом можно пингануть их, понгать не хочу.
+Далее есть возможность подписаться на нужный для мониторинга канал. Вся
+авторизация и настройка достаточно сложная, так что нужно смотреть доки. 
+
+(https://docs.kucoin.com/#websocket-feed)
 
 
 Все приватные REST запросы должны содержать следующие HTTP header-ы: <br/>
