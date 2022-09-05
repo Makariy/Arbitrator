@@ -4,10 +4,9 @@ import sys
 
 REDIS_URL = "redis://0.0.0.0"
 
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO
 
 KUCOIN_BASE_HTTP_URL = "https://api.kucoin.com"
-KUCOIN_BASE_WEBSOCKET_URL = ""
 
 
 LOGGING = {

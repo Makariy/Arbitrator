@@ -6,6 +6,7 @@
 ***
 
 ### KuCoin 
+#### Docs: https://docs.kucoin.com/
 ##### Base url: https://api.kucoin.com
 
 Все запросы content_type="application/json"
