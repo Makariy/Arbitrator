@@ -8,10 +8,13 @@ from layers.tracker.services.websocket_services import recv_json, send_json
 from layers.tracker.models import Bid, BidAsk
 
 from lib.symbols import Symbols
+from lib.database import Database
+from lib.database.key_manager import create_key
 from .kucoin_authorizer import KuCoinAuthorizer
 
 
 logger = logging.getLogger(__package__)
+database = Database()
 
 
 KuCoinSymbols = {
@@ -61,11 +64,12 @@ class KuCoinAcknowledgment(BaseModel):
 
 
 class KuCoinTracker(BaseTracker):
+    EXCHANGE_NAME = "kucoin"
     subscription_id = None
 
     def __init__(self, input: Symbols, output: Symbols):
-        self.input = KuCoinSymbols[input]
-        self.output = KuCoinSymbols[output]
+        self.input = input
+        self.output = output
         self.authorizer = KuCoinAuthorizer()
 
     async def _get_acknowledgment(self) -> KuCoinAcknowledgment:
@@ -76,14 +80,16 @@ class KuCoinTracker(BaseTracker):
         response = await recv_json(self.connection)
         bid_response = KuCoinBidResponse(**response)
         return Bid(
-            input=self.input,
-            output=self.output,
+            input=KuCoinSymbols[self.input],
+            output=KuCoinSymbols[self.output],
             bids=bid_response.data.asks
         )
 
     async def connect(self):
         self.connection = await self.authorizer.create_connection()
-        self.subscription_id = await self.subscribe(f"/spotMarket/level2Depth50:{self.input}-{self.output}")
+        self.subscription_id = await self.subscribe(
+            f"/spotMarket/level2Depth50:{KuCoinSymbols[self.input]}-{KuCoinSymbols[self.output]}"
+        )
 
     async def subscribe(self, url) -> str:
         subscription = {
@@ -102,11 +108,16 @@ class KuCoinTracker(BaseTracker):
 
         return ack.id
 
+    async def save_bid_to_database(self, bid: Bid):
+        key = create_key(self.EXCHANGE_NAME, self.input, self.output)
+        await database.set(key, bid.json())
+
     async def start_tracking(self):
         try:
             while True:
                 bid = await self._recv_bid()
                 logger.info(f"Got bid for '{bid.input}' to '{bid.output}': '{bid.bids[0]}'")
+                await self.save_bid_to_database(bid)
 
         except ConnectionError as error:
             logger.error(f"Server closed the connection: {error}")

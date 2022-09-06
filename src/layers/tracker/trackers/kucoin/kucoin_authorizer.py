@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Tuple
 import logging
 
 import aiohttp

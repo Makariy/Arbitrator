@@ -2,7 +2,7 @@ import logging
 import sys
 
 
-REDIS_URL = "redis://0.0.0.0"
+REDIS_URL = "redis://0.0.0.0:6379/"
 
 LOG_LEVEL = logging.INFO
 
