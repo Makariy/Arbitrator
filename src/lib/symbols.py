@@ -16,4 +16,3 @@ class Symbols(Enum):
 
         return None
 
-

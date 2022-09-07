@@ -12,7 +12,3 @@ class Bid(BaseModel):
     input: str
     output: str
     bids: List[BidAsk]
-
-
-
-

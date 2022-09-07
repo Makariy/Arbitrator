@@ -1,12 +1,20 @@
 import logging
 import sys
+from lib.symbols import Symbols
+from lib.exchanges import Exchanges, ToTrack
+
+
+LOG_LEVEL = logging.INFO
 
 
 REDIS_URL = "redis://0.0.0.0:6379/"
 
-LOG_LEVEL = logging.INFO
-
 KUCOIN_BASE_HTTP_URL = "https://api.kucoin.com"
+
+
+ALL_EXCHANGES = [
+        Exchanges.kucoin
+    ]
 
 
 LOGGING = {
@@ -32,8 +40,13 @@ LOGGING = {
     "modules": {
         "layers.tracker": {
             "level": logging.DEBUG,
-            "handlers": ["file", "stdout"]
+            "handlers": ["stdout"]
         }
     }
 }
+
+
+TO_TRACK = [
+   ToTrack(exchange=Exchanges.kucoin, input=Symbols.BTC, output=Symbols.USDT)
+]
 

@@ -8,6 +8,7 @@ from layers.tracker.services.websocket_services import recv_json, send_json
 from layers.tracker.models import Bid, BidAsk
 
 from lib.symbols import Symbols
+from lib.exchanges import Exchanges
 from lib.database import Database
 from lib.database.key_manager import create_key
 from .kucoin_authorizer import KuCoinAuthorizer
@@ -64,7 +65,7 @@ class KuCoinAcknowledgment(BaseModel):
 
 
 class KuCoinTracker(BaseTracker):
-    EXCHANGE_NAME = "kucoin"
+    EXCHANGE = Exchanges.kucoin
     subscription_id = None
 
     def __init__(self, input: Symbols, output: Symbols):
@@ -109,7 +110,7 @@ class KuCoinTracker(BaseTracker):
         return ack.id
 
     async def save_bid_to_database(self, bid: Bid):
-        key = create_key(self.EXCHANGE_NAME, self.input, self.output)
+        key = create_key(self.EXCHANGE, self.input, self.output)
         await database.set(key, bid.json())
 
     async def start_tracking(self):
