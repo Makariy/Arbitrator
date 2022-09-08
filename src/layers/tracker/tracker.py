@@ -26,6 +26,10 @@ def create_tracker(to_track: ToTrack) -> BaseTracker:
     raise ValueError(f"There is no such tracker to track {to_track.input}-{to_track.output} on {to_track.exchange}")
 
 
+def create_trackers(to_track_list: List[ToTrack]) -> List[BaseTracker]:
+    return [create_tracker(to_track) for to_track in to_track_list]
+
+
 async def _run_tracker(tracker: BaseTracker):
     logger.info(f"Start tracking from {tracker.input} to {tracker.output}")
     await tracker.connect()

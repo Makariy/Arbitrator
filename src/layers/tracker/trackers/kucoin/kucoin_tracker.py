@@ -107,8 +107,8 @@ class KuCoinTracker(BaseTracker):
         token_exchanges = []
         for ask in bid.asks:
             token_exchange = TokenExchange(
-                input=Token(price=1, symbol=self.input),
-                output=Token(price=ask.price, symbol=self.output),
+                input=Token(price=1, symbol=self.input, exchange=self.EXCHANGE),
+                output=Token(price=ask.price, symbol=self.output, exchange=self.EXCHANGE),
                 count=ask.count,
                 exchange=self.EXCHANGE
             )

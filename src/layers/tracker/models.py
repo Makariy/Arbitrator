@@ -8,6 +8,10 @@ from lib.exchanges import Exchanges
 class Token(BaseModel):
     price: float
     symbol: Symbols
+    exchange: Exchanges
+
+    def is_the_same(self, other) -> bool:
+        return self.symbol == other.symbol and self.exchange == other.exchange
 
 
 class TokenExchange(BaseModel):
@@ -15,6 +19,7 @@ class TokenExchange(BaseModel):
     output: Token
     count: float
     exchange: Exchanges
+    commission: float = 0
 
 
 class TokenExchanges(BaseModel):

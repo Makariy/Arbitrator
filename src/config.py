@@ -45,8 +45,10 @@ LOGGING = {
     }
 }
 
+MAX_EXCHANGE_DEPTH = 2
 
 TO_TRACK = [
-   ToTrack(exchange=Exchanges.kucoin, input=Symbols.BTC, output=Symbols.USDT)
+    ToTrack(exchange=Exchanges.kucoin, input=Symbols.BTC, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.kucoin, input=Symbols.USDT, output=Symbols.BTC)
 ]
 
