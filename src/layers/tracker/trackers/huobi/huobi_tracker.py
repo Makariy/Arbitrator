@@ -17,6 +17,9 @@ logger = logging.getLogger(__package__)
 
 
 HUOBI_SYMBOLS = {
+    Symbols.LUNA: "luna",
+    Symbols.DOGE: "doge",
+    Symbols.MIR: "mir",
     Symbols.USDT: "usdt",
     Symbols.BTC: "btc",
     Symbols.ETH: "eth",

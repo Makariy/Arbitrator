@@ -6,7 +6,7 @@ from lib.symbols import Symbols
 from lib.exchanges import Exchanges, ToTrack
 
 
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.ERROR
 
 
 REDIS_URL = "redis://0.0.0.0:6379/"
@@ -34,12 +34,16 @@ LOGGING = {
             "level": logging.DEBUG,
             "instance": logging.StreamHandler(stream=sys.stdout),
             "formatter": "default"
-        }
+        },
     },
 
     "modules": {
         "layers.tracker": {
-            "level": logging.DEBUG,
+            "level": logging.INFO,
+            "handlers": ["stdout"]
+        },
+        "websockets.client": {
+            "level": logging.INFO,
             "handlers": ["stdout"]
         }
     }
@@ -48,7 +52,13 @@ LOGGING = {
 MAX_EXCHANGE_DEPTH = 2
 
 TO_TRACK = [
+    ToTrack(exchange=Exchanges.kucoin, input=Symbols.DOGE, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.kucoin, input=Symbols.MIR, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.kucoin, input=Symbols.LUNA, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.kucoin, input=Symbols.BTC, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.BTC, output=Symbols.USDT)
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.DOGE, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.MIR, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.BTC, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.LUNA, output=Symbols.USDT),
 ]
 

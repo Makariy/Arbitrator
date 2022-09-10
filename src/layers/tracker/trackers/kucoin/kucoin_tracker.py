@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 import logging
 from pydantic import BaseModel, validator
@@ -10,8 +10,8 @@ from layers.tracker.models import TokenExchanges, TokenExchange, Token
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges
 from lib.database import Database
-from lib.database.key_manager import create_key
 from .kucoin_authorizer import KuCoinAuthorizer
+from .kucoin_ping_handler import KuCoinPingHandler
 
 
 logger = logging.getLogger(__package__)
@@ -20,6 +20,9 @@ database = Database()
 
 KuCoinSymbols = {
     Symbols.BTC: "BTC",
+    Symbols.LUNA: "LUNA",
+    Symbols.DOGE: "DOGE",
+    Symbols.MIR: "MIR",
     Symbols.ETH: "ETH",
     Symbols.EUR: "EUR",
     Symbols.RUB: "RUB",
@@ -73,6 +76,7 @@ class KuCoinTracker(BaseTracker):
     EXCHANGE = Exchanges.kucoin
 
     authorizer = KuCoinAuthorizer()
+    ping_handler = KuCoinPingHandler()
     subscription_id = None
 
     async def _get_acknowledgment(self) -> KuCoinAcknowledgment:
@@ -96,9 +100,10 @@ class KuCoinTracker(BaseTracker):
 
         return ack.id
 
-    async def _recv_bid(self) -> KuCoinBidResponseData:
+    async def _send_ping(self):
+        await send_json(self.connection, {"ping": self.subscription_id})
         response = await recv_json(self.connection)
-        return KuCoinBidResponse(**response).data
+        logger.info("Got pong from server: ", response)
 
     async def _convert_bid_to_token_exchanges(self, bid: KuCoinBidResponseData) -> TokenExchanges:
         token_exchanges = []
@@ -117,14 +122,33 @@ class KuCoinTracker(BaseTracker):
         self.subscription_id = await self._subscribe(
             f"/spotMarket/level2Depth50:{KuCoinSymbols[self.input]}-{KuCoinSymbols[self.output]}"
         )
+        await self.ping_handler.set_connection(self.connection)
+
+    async def _handle_bid(self, raw_bid: Dict):
+        bid = KuCoinBidResponse(**raw_bid).data
+        token_exchanges = await self._convert_bid_to_token_exchanges(bid)
+        logger.info(f"Got bid for '{self.input}' to '{self.output}': '{token_exchanges.token_exchanges[0]}'")
+        await self.save_token_exchanges_to_database(token_exchanges)
+
+    async def _handle_message(self, message: Dict):
+        type = message.get("type")
+        if type == "error":
+            logger.error(f"Got error in response: {message}")
+
+        if type == "pong":
+            return await self.ping_handler.handle_pong(message.get("id"))
+
+        if type == "message":
+            return await self._handle_bid(message)
 
     async def start_tracking(self):
         try:
             while True:
-                bid = await self._recv_bid()
-                token_exchanges = await self._convert_bid_to_token_exchanges(bid)
-                logger.info(f"Got bid for '{self.input}' to '{self.output}': '{token_exchanges.token_exchanges[0]}'")
-                await self.save_token_exchanges_to_database(token_exchanges)
+                if await self.ping_handler.is_time_to_ping():
+                    await self.ping_handler.ping(self.subscription_id)
+
+                response = await recv_json(self.connection)
+                await self._handle_message(response)
 
         except ConnectionError as error:
             logger.error(f"Server closed the connection: {error}")

@@ -1,4 +1,5 @@
 from typing import List, Optional
+from datetime import datetime
 import logging
 import asyncio
 from itertools import product
@@ -142,8 +143,12 @@ async def _run_analyzer():
         all_token_exchanges = await get_all_token_exchanges()
         chains = await get_all_chains(all_token_exchanges)
         possible_chains = await filter_possible_chains(chains)
-        best_chain = sorted(possible_chains, key=lambda chain: chain.get_profit_percent(), reverse=True)[0]
-        print(f"Best profit: {best_chain.get_profit_percent()}% - {best_chain}")
+        best_chains = sorted(possible_chains, key=lambda chain: chain.get_profit_percent(), reverse=True)[:8:2]
+        print("===" * 10)
+        print(f"Best chains for {datetime.now().strftime('%H:%M:%S')}: ")
+        for best_chain in best_chains:
+            print(f"Profit: {best_chain.get_profit_percent()}% - {best_chain}")
+        print("===" * 10)
         await asyncio.sleep(2)
 
 
