@@ -4,6 +4,7 @@ import asyncio
 from itertools import product
 
 from layers.tracker.models import TokenExchanges, TokenExchange, Token
+from layers.tracker.tracker import create_trackers
 from .token_exchanges_fetcher import get_token_exchanges
 
 from config import TO_TRACK, MAX_EXCHANGE_DEPTH
@@ -30,7 +31,8 @@ class ExchangeChain:
 
     def __str__(self):
         return f"""ExchangeChain(cells={[
-            f'{token_exchange.input.symbol.name} - {token_exchange.output.symbol.name}' 
+            f'{token_exchange.input.exchange} - {token_exchange.input.symbol.name} -> ' 
+            f'{token_exchange.output.exchange} - {token_exchange.output.symbol.name}' 
             for token_exchange in self.cells]})"""
 
     def __repr__(self):
@@ -65,19 +67,37 @@ class ExchangeChain:
 
         current_token = Token(**first_exchange.input.dict())
         for cell in self.cells:
-            price = current_token.price * cell.output.price
+            price = current_token.price * cell.input.price / cell.output.price
             current_token = Token(price=price, symbol=cell.output.symbol, exchange=cell.output.exchange)
 
         return 1 - (first_exchange.input.price / current_token.price)
 
 
+async def _reverse_token_exchange(token_exchange: TokenExchange) -> TokenExchange:
+    return TokenExchange(
+        input=token_exchange.output,
+        output=token_exchange.input,
+        count=token_exchange.count,
+        exchange=token_exchange.exchange,
+        commission=token_exchange.commission
+    )
+
+
+async def _reverse_token_exchanges(token_exchanges: TokenExchanges) -> TokenExchanges:
+    return TokenExchanges(token_exchanges=[
+        await _reverse_token_exchange(token_exchange) for token_exchange in token_exchanges.token_exchanges
+    ])
+
+
 async def get_all_token_exchanges() -> List[TokenExchanges]:
     """Gets the current value of all the token exchanges that are configured to run from the database"""
-    from layers.tracker.tracker import create_trackers
     trackers = create_trackers(TO_TRACK)
     token_exchanges = []
     for tracker in trackers:
-        token_exchanges.append(await get_token_exchanges(tracker.EXCHANGE, tracker.input, tracker.output))
+        token_exchange = await get_token_exchanges(tracker.EXCHANGE, tracker.input, tracker.output)
+        token_exchanges.append(token_exchange)
+        token_exchanges.append(await _reverse_token_exchanges(token_exchange))
+
     return token_exchanges
 
 
@@ -122,10 +142,9 @@ async def _run_analyzer():
         all_token_exchanges = await get_all_token_exchanges()
         chains = await get_all_chains(all_token_exchanges)
         possible_chains = await filter_possible_chains(chains)
-        print("Possible chains: ", possible_chains)
-        for possible_chain in possible_chains:
-            print(f"Profit from chain {possible_chain}: {possible_chain.get_profit_percent()}%")
-        return
+        best_chain = sorted(possible_chains, key=lambda chain: chain.get_profit_percent(), reverse=True)[0]
+        print(f"Best profit: {best_chain.get_profit_percent()}% - {best_chain}")
+        await asyncio.sleep(2)
 
 
 def run_analyzer():

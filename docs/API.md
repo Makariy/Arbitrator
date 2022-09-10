@@ -48,14 +48,11 @@ https://api.kucoin.com/api/v1/bullet-public, и из ответа
 
 ### Huobi
 
-Пока нужно сделать как минимум получение данных с KuCoin, а потом
-уже посмотрю Huobi, так что пока информации мало.
-
 ##### Base url: https://api.huobi.pro
 ##### Base WebSocket: wss://api.huobi.pro/ws/v2
 
 
-Лимитировано 50 запросов в секунду, но в случае WebSocket
+Лимитировано 50 запросов в секунду на WebSocket
 
 #### API endpoints HTTP:
  - /market/detail/merged?symbol

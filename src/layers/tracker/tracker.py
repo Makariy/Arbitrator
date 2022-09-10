@@ -13,8 +13,10 @@ database = Database()
 
 def get_all_trackers() -> List[BaseTracker.__class__]:
     from .trackers.kucoin.kucoin_tracker import KuCoinTracker
+    from .trackers.huobi.huobi_tracker import HuobiTracker
     return [
-        KuCoinTracker
+        KuCoinTracker,
+        HuobiTracker
     ]
 
 

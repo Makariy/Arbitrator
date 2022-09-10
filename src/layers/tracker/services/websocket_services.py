@@ -11,9 +11,16 @@ async def create_connection(url: str) -> Optional[websockets.WebSocketClientProt
         return None
 
 
-async def recv_json(connection: websockets.WebSocketClientProtocol) -> Dict:
+async def recv_json(connection: websockets.WebSocketClientProtocol, decompress_function=None) -> Dict:
     try:
-        response = json.loads(await connection.recv())
+        data = await connection.recv()
+        if decompress_function is not None:
+            data = decompress_function(data)
+
+        if type(data) is bytes:
+            data = data.decode()
+
+        response = json.loads(data)
         return response
     except JSONDecodeError as error:
         raise ValueError(f"Could not parse the response from server: '{error}'")

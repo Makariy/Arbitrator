@@ -71,12 +71,9 @@ class KuCoinAcknowledgment(BaseModel):
 
 class KuCoinTracker(BaseTracker):
     EXCHANGE = Exchanges.kucoin
-    subscription_id = None
 
-    def __init__(self, input: Symbols, output: Symbols):
-        self.input = input
-        self.output = output
-        self.authorizer = KuCoinAuthorizer()
+    authorizer = KuCoinAuthorizer()
+    subscription_id = None
 
     async def _get_acknowledgment(self) -> KuCoinAcknowledgment:
         response = await recv_json(self.connection)
@@ -120,10 +117,6 @@ class KuCoinTracker(BaseTracker):
         self.subscription_id = await self._subscribe(
             f"/spotMarket/level2Depth50:{KuCoinSymbols[self.input]}-{KuCoinSymbols[self.output]}"
         )
-
-    async def save_token_exchanges_to_database(self, token_exchanges: TokenExchanges):
-        key = create_key(self.EXCHANGE, self.input, self.output)
-        await database.set(key, token_exchanges.json())
 
     async def start_tracking(self):
         try:

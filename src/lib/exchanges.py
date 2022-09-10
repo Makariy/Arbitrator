@@ -5,6 +5,7 @@ from .symbols import Symbols
 
 class Exchanges(Enum):
     kucoin = "KuCoin"
+    huobi = "Huobi"
 
 
 @dataclass

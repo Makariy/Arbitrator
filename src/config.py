@@ -1,5 +1,7 @@
-import logging
+import os
 import sys
+import logging
+
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges, ToTrack
 
@@ -11,10 +13,8 @@ REDIS_URL = "redis://0.0.0.0:6379/"
 
 KUCOIN_BASE_HTTP_URL = "https://api.kucoin.com"
 
-
-ALL_EXCHANGES = [
-        Exchanges.kucoin
-    ]
+HUOBI_BASE_WEBSOCKETS_URL = "wss://api.huobi.pro/ws"
+HUOBI_ACCESS_KEY = os.environ.get('HUOBI_ACCESS_KEY')
 
 
 LOGGING = {
@@ -49,6 +49,6 @@ MAX_EXCHANGE_DEPTH = 2
 
 TO_TRACK = [
     ToTrack(exchange=Exchanges.kucoin, input=Symbols.BTC, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.kucoin, input=Symbols.USDT, output=Symbols.BTC)
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.BTC, output=Symbols.USDT)
 ]
 
