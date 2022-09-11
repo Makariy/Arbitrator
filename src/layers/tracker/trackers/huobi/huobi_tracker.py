@@ -1,7 +1,6 @@
-from typing import Optional, Dict, List
+from typing import Dict
 import logging
 import gzip
-from pydantic import BaseModel, validator
 
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges
@@ -10,6 +9,8 @@ from layers.tracker.services.websocket_services import create_connection, recv_j
 
 from ..base_tracker import BaseTracker
 
+from .huobi_responses import HuobiAcknowledgment, HuobiMarketDepthResponse
+
 import config
 
 
@@ -17,10 +18,18 @@ logger = logging.getLogger(__package__)
 
 
 HUOBI_SYMBOLS = {
-    Symbols.LUNA: "luna",
-    Symbols.DOGE: "doge",
-    Symbols.MIR: "mir",
     Symbols.USDT: "usdt",
+    Symbols.LUNA: "luna",
+    Symbols.MIR: "mir",
+    Symbols.SOL: "sol",
+    Symbols.SHIB: "shib",
+    Symbols.AVAX: "avax",
+    Symbols.ATOM: "atom",
+    Symbols.EOS: "eos",
+    Symbols.XRP: "xrp",
+    Symbols.WAVES: "waves",
+
+    Symbols.DOGE: "doge",
     Symbols.BTC: "btc",
     Symbols.ETH: "eth",
     Symbols.EUR: "eur",
@@ -28,53 +37,19 @@ HUOBI_SYMBOLS = {
 }
 
 
-class HuobiAcknowledgment(BaseModel):
-    id: str
-    status: str
-    subbed: Optional[str]
-    ts: int
-
-
-class HuobiMarketDepthTickBid(BaseModel):
-    price: float
-    count: float
-
-
-class HuobiMarketDepthTick(BaseModel):
-    bids: List[HuobiMarketDepthTickBid]
-    version: int
-    timestamp: int
-
-    @validator("bids", pre=True)
-    def set_bids(value):
-        bids = []
-        for bid in value:
-            bids.append(HuobiMarketDepthTickBid(price=bid[0], count=bid[1]))
-        return bids
-
-    class Config:
-        fields = {
-            "timestamp": "ts"
-        }
-
-
-class HuobiMarketDepthResponse(BaseModel):
-    channel: str
-    timestamp: int
-    tick: HuobiMarketDepthTick
-
-    class Config:
-        fields = {
-            "channel": "ch",
-            "timestamp": "ts"
-        }
-
-
 class HuobiTracker(BaseTracker):
     EXCHANGE = Exchanges.huobi
 
     async def _recv_data(self):
         return await recv_json(self.connection, decompress_function=gzip.decompress)
+
+    async def _subscribe(self) -> HuobiAcknowledgment:
+        symbol = f"{HUOBI_SYMBOLS[self.input]}{HUOBI_SYMBOLS[self.output]}"
+        await send_json(self.connection, {
+            "sub": f"market.{symbol}.depth.step0",
+            "id": "id1"
+        })
+        return await self._get_acknowledgment()
 
     async def _get_acknowledgment(self) -> HuobiAcknowledgment:
         ack = await self._recv_data()
@@ -100,26 +75,22 @@ class HuobiTracker(BaseTracker):
         logger.info(f"Got bid for {self.input} to {self.output}: {token_exchanges.token_exchanges[0]}")
         return await self.save_token_exchanges_to_database(token_exchanges)
 
-    async def _handle_response(self, response: Dict):
-        ping = response.get("ping")
+    async def _handle_message(self, message: Dict):
+        ping = message.get("ping")
         if ping is not None:
             return await self._dispatch_ping(ping)
 
-        market_depth_response = HuobiMarketDepthResponse(**response)
-        return await self._dispatch_depth_response(market_depth_response)
+        else:
+            market_depth_response = HuobiMarketDepthResponse(**message)
+            return await self._dispatch_depth_response(market_depth_response)
 
     async def connect(self):
         self.connection = await create_connection(config.HUOBI_BASE_WEBSOCKETS_URL)
-        symbol = f"{HUOBI_SYMBOLS[self.input]}{HUOBI_SYMBOLS[self.output]}"
-        await send_json(self.connection, {
-            "sub": f"market.{symbol}.depth.step0",
-            "id": "id1"
-        })
-        ack = await self._get_acknowledgment()
+        ack = await self._subscribe()
         logger.info(f"Got acknowledgment from server: {ack.id}")
 
     async def start_tracking(self):
         logger.info(f"Starting tracking from '{self.input}' to '{self.output}'")
         while True:
-            data = await self._recv_data()
-            await self._handle_response(data)
+            message = await self._recv_data()
+            await self._handle_message(message)

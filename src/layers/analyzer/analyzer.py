@@ -1,77 +1,20 @@
-from typing import List, Optional
+from typing import List
 from datetime import datetime
 import logging
 import asyncio
 from itertools import product
 
-from layers.tracker.models import TokenExchanges, TokenExchange, Token
+from layers.tracker.models import TokenExchanges, TokenExchange
 from layers.tracker.tracker import create_trackers
-from .token_exchanges_fetcher import get_token_exchanges
 
-from config import TO_TRACK, MAX_EXCHANGE_DEPTH
+from .chain import ExchangeChain, InvalidChain
+from .token_exchanges_fetcher import get_token_exchanges
+from .logger.logger import log_best_chains, print_best_chains
+
+from config import TO_TRACK, MAX_EXCHANGE_DEPTH, INPUT_TOKEN
 
 
 logger = logging.getLogger(__package__)
-
-
-class InvalidChain(Exception):
-    pass
-
-
-class ExchangeChain:
-    cells: List[TokenExchange] = []
-
-    def __init__(self, cells: Optional[List[TokenExchange]]):
-        self.cells = []
-        if cells:
-            for cell in cells:
-                self.add_cell(cell)
-
-    def __iter__(self):
-        return self.cells.__iter__()
-
-    def __str__(self):
-        return f"""ExchangeChain(cells={[
-            f'{token_exchange.input.exchange} - {token_exchange.input.symbol.name} -> ' 
-            f'{token_exchange.output.exchange} - {token_exchange.output.symbol.name}' 
-            for token_exchange in self.cells]})"""
-
-    def __repr__(self):
-        return self.__str__()
-
-    def _get_last_cell(self) -> TokenExchange:
-        if len(self.cells) == 0:
-            raise IndexError("There are no cells")
-        return self.cells[len(self.cells) - 1]
-
-    def validate_chain(self):
-        if len(self.cells) < 2:
-            raise InvalidChain("Chain length is less than 2")
-        if not self.cells[0].input.is_the_same(self._get_last_cell().output):
-            raise InvalidChain("The chain input is not the same chain output")
-
-    def add_cell(self, cell: TokenExchange):
-        if self.cells:
-            if not self._get_last_cell().output.is_the_same(cell.input):
-                raise InvalidChain("The previous output token is not the same as the new input token")
-        self.cells.append(cell)
-
-    def get_profit_percent(self) -> float:
-        if len(self.cells) == 0:
-            return 0
-
-        first_exchange = self.cells[0]
-        last_exchange = self._get_last_cell()
-
-        if not first_exchange.input.is_the_same(last_exchange.output):
-            raise ValueError("The input and the output tokens in the chain are not the same")
-
-        current_token = Token(**first_exchange.input.dict())
-        for cell in self.cells:
-            price = current_token.price * cell.input.price / cell.output.price
-            current_token = Token(price=price, symbol=cell.output.symbol, exchange=cell.output.exchange)
-
-        return 1 - (first_exchange.input.price / current_token.price)
 
 
 async def _reverse_token_exchange(token_exchange: TokenExchange) -> TokenExchange:
@@ -112,15 +55,25 @@ async def get_best_token_exchange_from_list(token_exchanges: TokenExchanges) -> 
             return token_exchange
 
 
+async def _get_all_combinations_by_depth(arr: List, min_depth=2, max_depth=MAX_EXCHANGE_DEPTH):
+    combinations = []
+    for i in range(min_depth, max_depth + 1):
+        combinations += product(*([arr] * i))
+    return combinations
+
+
 async def get_all_chains(token_exchanges_list: List[TokenExchanges]) -> List[ExchangeChain]:
     token_exchange_list = []
     for token_exchanges in token_exchanges_list:
         token_exchange_list.append(await get_best_token_exchange_from_list(token_exchanges))
-    combinations = product(*([token_exchange_list] * MAX_EXCHANGE_DEPTH))
+
+    combinations = await _get_all_combinations_by_depth(token_exchange_list)
     chains = []
     for combination in combinations:
         try:
-            chains.append(ExchangeChain(combination))
+            chain = ExchangeChain(cells=combination)
+            chain.validate_chain()
+            chains.append(chain)
         except InvalidChain:
             pass
     return chains
@@ -130,8 +83,9 @@ async def filter_possible_chains(chains: List[ExchangeChain]) -> List[ExchangeCh
     possible_chains = []
     for chain in chains:
         try:
-            chain.validate_chain()
-            possible_chains.append(chain)
+            if INPUT_TOKEN in [None, chain.cells[0].input.symbol]:
+                chain.validate_chain()
+                possible_chains.append(chain)
         except InvalidChain:
             pass
 
@@ -143,11 +97,13 @@ async def _run_analyzer():
         all_token_exchanges = await get_all_token_exchanges()
         chains = await get_all_chains(all_token_exchanges)
         possible_chains = await filter_possible_chains(chains)
-        best_chains = sorted(possible_chains, key=lambda chain: chain.get_profit_percent(), reverse=True)[:8:2]
+        best_chains = sorted(possible_chains, key=lambda chain: chain.get_profit_percent(), reverse=True)[:20]
+        await log_best_chains(best_chains)
         print("===" * 10)
-        print(f"Best chains for {datetime.now().strftime('%H:%M:%S')}: ")
-        for best_chain in best_chains:
-            print(f"Profit: {best_chain.get_profit_percent()}% - {best_chain}")
+        print("Current best chains: ")
+        for chain in best_chains[:8]:
+            print("Profit: ", chain.get_profit_percent(), " - ", chain)
+        # await print_best_chains()
         print("===" * 10)
         await asyncio.sleep(2)
 

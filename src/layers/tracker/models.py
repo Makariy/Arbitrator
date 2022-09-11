@@ -25,4 +25,3 @@ class TokenExchange(BaseModel):
 
 class TokenExchanges(BaseModel):
     token_exchanges: List[TokenExchange]
-

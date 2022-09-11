@@ -3,8 +3,17 @@ from enum import Enum
 
 class Symbols(Enum):
     USDT = "USDT"
+
     LUNA = "LUNA"
+    SOL = "SOL"
+    SHIB = "SHIB"
     MIR = "MIR"
+    AVAX = "AVAX"
+    ATOM = "ATOM"
+    EOS = "EOS"
+    XRP = "XRP"
+    WAVES = "WAVES"
+
     DOGE = "DOGE"
     ETH = "ETH"
     BTC = "BTC"

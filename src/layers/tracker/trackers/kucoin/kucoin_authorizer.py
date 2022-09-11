@@ -45,7 +45,7 @@ class KuCoinAuthorizer:
         logger.info(f"Got the connection id: {self.connection_id}")
         return connection
 
-    async def create_connection(self) -> WebSocketClientProtocol:
+    async def connect(self) -> WebSocketClientProtocol:
         self.token, self.endpoint_url = await self._authorize_on_server()
         return await self._create_connection()
 
