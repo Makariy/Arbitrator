@@ -1,7 +1,7 @@
 from typing import Tuple
 import logging
-
 import aiohttp
+
 from websockets import WebSocketClientProtocol
 from layers.tracker.services.websocket_services import create_connection, recv_json
 
@@ -36,16 +36,13 @@ class KuCoinAuthorizer:
             raise ConnectionError(f"Server refused to send the subscription_id")
         return connection_id
 
-    async def _create_connection(self) -> WebSocketClientProtocol:
+    async def authorize(self):
+        self.token, self.endpoint_url = await self._authorize_on_server()
+
+    async def open_connection(self) -> WebSocketClientProtocol:
         connection = await create_connection(f"wss://ws-api.kucoin.com/endpoint?token={self.token}")
         if connection is None:
             raise ConnectionResetError(f"Server refused to accept the connection")
-        logger.info(f"Created the connection with server: {connection}")
         self.connection_id = await self._get_connection_id(connection)
         logger.info(f"Got the connection id: {self.connection_id}")
         return connection
-
-    async def connect(self) -> WebSocketClientProtocol:
-        self.token, self.endpoint_url = await self._authorize_on_server()
-        return await self._create_connection()
-

@@ -3,8 +3,8 @@ import logging
 import asyncio
 
 from lib.database import Database
-from lib.exchanges import ToTrack
-from layers.tracker.trackers.base_tracker import BaseTracker
+from lib.exchanges import ToTrack, Exchanges
+from layers.tracker.trackers.base import BaseTracker
 
 
 logger = logging.getLogger(__package__)
@@ -20,32 +20,43 @@ def get_all_trackers() -> List[BaseTracker.__class__]:
     ]
 
 
-def create_tracker(to_track: ToTrack) -> BaseTracker:
-    trackers = list(filter(lambda a: a.EXCHANGE == to_track.exchange, get_all_trackers()))
-    if trackers:
-        tracker = trackers[0]
-        return tracker(input=to_track.input, output=to_track.output)
-    raise ValueError(f"There is no such tracker to track {to_track.input}-{to_track.output} on {to_track.exchange}")
+async def get_tracker_by_exchange(exchange: Exchanges) -> BaseTracker.__class__:
+    for tracker in get_all_trackers():
+        if tracker.EXCHANGE == exchange:
+            return tracker
+
+    raise ValueError(f"No such tracker for {exchange}")
 
 
-def create_trackers(to_track_list: List[ToTrack]) -> List[BaseTracker]:
-    return [create_tracker(to_track) for to_track in to_track_list]
+async def create_trackers_for_exchange(exchange: Exchanges, to_track_list: List[ToTrack]) -> BaseTracker:
+    exchanges_to_track_list = list(filter(lambda a: a.exchange == exchange, to_track_list))
+    tracker_cls = await get_tracker_by_exchange(exchange)
+    tracker = tracker_cls()
+    await tracker.init(exchanges_to_track_list)
+    return tracker
 
 
-async def _run_tracker(tracker: BaseTracker):
-    logger.info(f"Start tracking from {tracker.input} to {tracker.output}")
+async def create_trackers(to_track_list: List[ToTrack]) -> List[BaseTracker]:
+    exchanges = set(map(lambda a: a.exchange, to_track_list))
+    trackers = []
+    for exchange in exchanges:
+        trackers.append(await create_trackers_for_exchange(exchange, to_track_list))
+    return trackers
+
+
+async def start_tracker(tracker: BaseTracker):
     await tracker.connect()
     await tracker.start_tracking()
 
 
-def run_tracker(tracker: BaseTracker):
-    asyncio.run(_run_tracker(tracker))
-
-
-def run_trackers(trackers: List[BaseTracker]):
-    loop = asyncio.get_event_loop()
+async def _run_trackers(to_track_list: List[ToTrack]):
+    trackers = await create_trackers(to_track_list)
     tasks = []
     for tracker in trackers:
-        tasks.append(loop.create_task(_run_tracker(tracker)))
-    loop.run_until_complete(asyncio.gather(*tasks))
+        tasks.append(asyncio.create_task(start_tracker(tracker)))
+    await asyncio.gather(*tasks)
+
+
+def run_trackers(to_track_list: List[ToTrack]):
+    asyncio.run(_run_trackers(to_track_list))
 

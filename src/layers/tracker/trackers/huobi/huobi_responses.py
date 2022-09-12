@@ -5,7 +5,7 @@ from pydantic import BaseModel, validator
 class HuobiAcknowledgment(BaseModel):
     id: str
     status: str
-    subbed: Optional[str]
+    sub: Optional[str]
     ts: int
 
 

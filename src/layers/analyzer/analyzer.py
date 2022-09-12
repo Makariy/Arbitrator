@@ -35,10 +35,9 @@ async def _reverse_token_exchanges(token_exchanges: TokenExchanges) -> TokenExch
 
 async def get_all_token_exchanges() -> List[TokenExchanges]:
     """Gets the current value of all the token exchanges that are configured to run from the database"""
-    trackers = create_trackers(TO_TRACK)
     token_exchanges = []
-    for tracker in trackers:
-        token_exchange = await get_token_exchanges(tracker.EXCHANGE, tracker.input, tracker.output)
+    for to_track in TO_TRACK:
+        token_exchange = await get_token_exchanges(to_track.exchange, to_track.input, to_track.output)
         token_exchanges.append(token_exchange)
         token_exchanges.append(await _reverse_token_exchanges(token_exchange))
 
