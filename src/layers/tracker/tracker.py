@@ -45,8 +45,13 @@ async def create_trackers(to_track_list: List[ToTrack]) -> List[BaseTracker]:
 
 
 async def start_tracker(tracker: BaseTracker):
-    await tracker.connect()
-    await tracker.start_tracking()
+    while True:
+        try:
+            logger.info(f"Starting tracker: {tracker}")
+            await tracker.connect()
+            await tracker.start_tracking()
+        except ConnectionError as error:
+            logger.warning(f"Connection error occurred: {error}")
 
 
 async def _run_trackers(to_track_list: List[ToTrack]):

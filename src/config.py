@@ -66,6 +66,7 @@ TO_TRACK = [
     ToTrack(exchange=Exchanges.kucoin, input=Symbols.BTC, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.kucoin, input=Symbols.ETH, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.kucoin, input=Symbols.DOGE, output=Symbols.USDT),
+
     ToTrack(exchange=Exchanges.kucoin, input=Symbols.SHIB, output=Symbols.DOGE),
 
     # Huobi
