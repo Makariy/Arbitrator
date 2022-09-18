@@ -2,40 +2,32 @@ from typing import List, Optional
 
 import json
 from lib.database import Database
-from lib.symbols import Symbols
+from lib.symbols import Symbols, join_symbols
 from ..chain import ExchangeChain
 
 
 database = Database()
 
-KEY = "best_chain"
+BEST_CHAIN_KEY = "bestchain"
+CURRENT_CHAIN_KEY = "currentchain"
 
 
-async def join_symbols(symbols: List[Symbols]) -> str:
-    return "-".join(map(lambda a: a.value, symbols))
+async def make_key_for_best_chain(symbols: List[Symbols]) -> str:
+    return f"{BEST_CHAIN_KEY}_{await join_symbols(symbols)}"
 
 
-async def get_chain_symbols(chain: ExchangeChain) -> List[Symbols]:
-    cells = chain.cells
-    return [cells[0].input.symbol, *list(map(lambda a: a.output.symbol, cells))]
-
-
-async def make_key_for_symbols(symbols: List[Symbols]) -> str:
-    return f"{KEY}_{await join_symbols(symbols)}"
-
-
-async def make_key_for_chain(chain: ExchangeChain) -> str:
-    symbols = await get_chain_symbols(chain)
-    return await make_key_for_symbols(symbols)
+async def make_key_for_current_chain(symbols: List[Symbols]) -> str:
+    return f"{CURRENT_CHAIN_KEY}_{await join_symbols(symbols)}"
 
 
 async def set_best_chain(chain: ExchangeChain):
-    key = await make_key_for_chain(chain)
+    symbols = chain.get_chain_symbols()
+    key = await make_key_for_best_chain(symbols)
     await database.set(key, chain.json())
 
 
 async def get_best_chain(symbols: List[Symbols]) -> Optional[ExchangeChain]:
-    key = await make_key_for_symbols(symbols)
+    key = await make_key_for_best_chain(symbols)
     raw_best_chain = await database.get(key)
     if raw_best_chain is not None:
         return ExchangeChain(**json.loads(raw_best_chain))
@@ -44,7 +36,7 @@ async def get_best_chain(symbols: List[Symbols]) -> Optional[ExchangeChain]:
 
 
 async def get_all_best_chains() -> List[ExchangeChain]:
-    keys = await database.keys(KEY + "*")
+    keys = await database.keys(BEST_CHAIN_KEY + "*")
     exchanges = []
     for key in keys:
         raw_exchange = await database.get(key)
@@ -52,9 +44,24 @@ async def get_all_best_chains() -> List[ExchangeChain]:
     return sorted(exchanges, key=lambda a: a.get_profit_percent(), reverse=True)
 
 
+async def save_current_chains(best_chains: List[ExchangeChain]):
+    for chain in best_chains:
+        symbols = chain.get_chain_symbols()
+        await database.set(await make_key_for_current_chain(symbols), chain.json())
+
+
+async def get_current_chain(symbols: List[Symbols]) -> Optional[ExchangeChain]:
+    raw_chain = await database.get(await make_key_for_current_chain(symbols))
+    if raw_chain is None:
+        return None
+    return ExchangeChain(**json.loads(raw_chain))
+
+
 async def log_best_chains(chains: List[ExchangeChain]):
+    await save_current_chains(chains)
+
     for chain in chains:
-        symbols = await get_chain_symbols(chain)
+        symbols = chain.get_chain_symbols()
         best_chain = await get_best_chain(symbols)
 
         if best_chain is not None:
@@ -64,15 +71,15 @@ async def log_best_chains(chains: List[ExchangeChain]):
         await set_best_chain(chain)
 
 
-async def format_best_chain(chain: ExchangeChain) -> str:
+async def format_chain(chain: ExchangeChain) -> str:
     profit = "%.5f" % chain.get_profit_percent()
-    symbols = await get_chain_symbols(chain)
+    symbols = chain.get_chain_symbols()
     rendered_chain = "-".join(map(lambda a: a.value, symbols))
     return f"Profit: {profit}%  {rendered_chain}"
 
 
-async def format_best_chains(chains: List[ExchangeChain]) -> str:
-    sorted_chains = sorted(chains, key=lambda a: a.get_profit_percent(), reverse=True )
-    formatted_chains = [await format_best_chain(chain) for chain in sorted_chains]
+async def format_chains(chains: List[ExchangeChain]) -> str:
+    sorted_chains = sorted(chains, key=lambda a: a.get_profit_percent(), reverse=True)
+    formatted_chains = [await format_chain(chain) for chain in sorted_chains]
     return "\n".join(formatted_chains)
 

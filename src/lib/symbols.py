@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 
 class Symbols(Enum):
@@ -27,4 +28,8 @@ class Symbols(Enum):
                 return item
 
         return None
+
+
+async def join_symbols(symbols: List[Symbols]) -> str:
+    return "-".join(map(lambda a: a.value, symbols))
 

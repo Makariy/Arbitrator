@@ -1,6 +1,7 @@
 from typing import List
 
 from pydantic import BaseModel
+from lib.symbols import Symbols
 from lib.token import TokenExchange, Token
 
 
@@ -65,3 +66,9 @@ class ExchangeChain(BaseModel):
             current_token = Token(price=price, symbol=cell.output.symbol, exchange=cell.output.exchange)
 
         return 1 - (first_exchange.input.price / current_token.price)
+
+    def get_chain_symbols(self) -> List[Symbols]:
+        cells = self.cells
+        return [cells[0].input.symbol, *list(map(lambda a: a.output.symbol, cells))]
+
+

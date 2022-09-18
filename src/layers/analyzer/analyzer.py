@@ -95,7 +95,8 @@ async def _run_analyzer():
         all_token_exchanges = await get_all_token_exchanges()
         chains = await get_all_chains(all_token_exchanges)
         possible_chains = await filter_possible_chains(chains)
-        best_chains = sorted(possible_chains, key=lambda a: a.get_profit_percent(), reverse=True)
+        sorted_chains = sorted(possible_chains, key=lambda a: a.get_profit_percent(), reverse=True)
+        best_chains = list(filter(lambda a: a.get_profit_percent() > 0, sorted_chains))
 
         print("Current best chains: ")
         for chain in best_chains[:8]:

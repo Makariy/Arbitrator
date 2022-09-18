@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher, executor
 import config
-from .handlers import handle_best_chain, handle_best_chains
+from .handlers import handle_current_chain, handle_best_chains
 
 
 def create_bot() -> Bot:
@@ -9,8 +9,8 @@ def create_bot() -> Bot:
 
 def _create_dispatcher(bot: Bot) -> Dispatcher:
     dispatcher = Dispatcher(bot)
-    dispatcher.message_handler(commands=["best_chain", "chain"])(handle_best_chain)
-    dispatcher.message_handler(commands=["best_chains", "chains"])(handle_best_chains)
+    dispatcher.message_handler(commands=["chain"])(handle_current_chain)
+    dispatcher.message_handler(commands=["best_chains"])(handle_best_chains)
     return dispatcher
 
 
