@@ -21,7 +21,7 @@ class Symbols(Enum):
     RUB = "RUB"
 
     @staticmethod
-    def get_symbol_by_value(self, value: str):
+    def get_symbol_by_value(value: str):
         for item in list(Symbols):
             if item.value == value:
                 return item

@@ -1,6 +1,7 @@
 from typing import List
 import logging
 import asyncio
+from websockets.exceptions import WebSocketException
 
 from lib.database import Database
 from lib.exchanges import ToTrack, Exchanges
@@ -50,7 +51,7 @@ async def start_tracker(tracker: BaseTracker):
             logger.info(f"Starting tracker: {tracker}")
             await tracker.connect()
             await tracker.start_tracking()
-        except ConnectionError as error:
+        except (ConnectionError, WebSocketException) as error:
             logger.warning(f"Connection error occurred: {error}")
 
 
@@ -62,6 +63,18 @@ async def _run_trackers(to_track_list: List[ToTrack]):
     await asyncio.gather(*tasks)
 
 
-def run_trackers(to_track_list: List[ToTrack]):
-    asyncio.run(_run_trackers(to_track_list))
+def _run_multiprocessing_tracker(tracker: BaseTracker):
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(start_tracker(tracker))
 
+
+def _run_multiprocessing_trackers(to_track_list: List[ToTrack]):
+    from multiprocessing import Pool
+    pool = Pool()
+    trackers = asyncio.run(create_trackers(to_track_list))
+    pool.map(_run_multiprocessing_tracker, trackers)
+
+
+def run_trackers(to_track_list: List[ToTrack]):
+    # asyncio.run(_run_trackers(to_track_list))
+    _run_multiprocessing_trackers(to_track_list)

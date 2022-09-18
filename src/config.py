@@ -17,6 +17,8 @@ KUCOIN_BASE_HTTP_URL = "https://api.kucoin.com"
 HUOBI_BASE_WEBSOCKETS_URL = "wss://api.huobi.pro/ws"
 HUOBI_ACCESS_KEY = os.environ.get('HUOBI_ACCESS_KEY')
 
+TELEGRAM_API_TOKEN = os.environ.get("TELEGRAM_API_TOKEN")
+
 
 LOGGING = {
     "formatters": {
@@ -50,7 +52,7 @@ LOGGING = {
     }
 }
 
-MAX_EXCHANGE_DEPTH = 3
+MAX_EXCHANGE_DEPTH = 2
 
 TO_TRACK = [
     # KuCoin
@@ -70,10 +72,10 @@ TO_TRACK = [
     ToTrack(exchange=Exchanges.kucoin, input=Symbols.SHIB, output=Symbols.DOGE),
 
     # Huobi
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.SOL, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.SHIB, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.huobi, input=Symbols.MIR, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.huobi, input=Symbols.LUNA, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.SOL, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.SHIB, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.huobi, input=Symbols.AVAX, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.huobi, input=Symbols.ATOM, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.huobi, input=Symbols.EOS, output=Symbols.USDT),

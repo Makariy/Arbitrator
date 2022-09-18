@@ -1,7 +1,7 @@
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel
-from layers.tracker.models import TokenExchange, Token
+from lib.token import TokenExchange, Token
 
 
 class InvalidChain(Exception):
@@ -38,16 +38,16 @@ class ExchangeChain(BaseModel):
         previous_cell = self.cells[0]
         for i in range(1, len(self.cells)):
             current_cell = self.cells[i]
-            if not previous_cell.output.is_the_same(current_cell.input):
+            if not previous_cell.output.can_convert_to(current_cell.input):
                 raise InvalidChain("The previous output token is not the same as the new input token")
             previous_cell = current_cell
 
-        if not self.cells[0].input.is_the_same(self._get_last_cell().output):
+        if not self.cells[0].input.can_convert_to(self._get_last_cell().output):
             raise InvalidChain("The chain input is not the same chain output")
 
     def add_cell(self, cell: TokenExchange):
         if self.cells:
-            if not self._get_last_cell().output.is_the_same(cell.input):
+            if not self._get_last_cell().output.can_convert_to(cell.input):
                 raise InvalidChain("The previous output token is not the same as the new input token")
         self.cells.append(cell)
 
@@ -58,10 +58,6 @@ class ExchangeChain(BaseModel):
             return 0
 
         first_exchange = self.cells[0]
-        last_exchange = self._get_last_cell()
-
-        if not first_exchange.input.is_the_same(last_exchange.output):
-            raise ValueError("The input and the output tokens in the chain are not the same")
 
         current_token = Token(**first_exchange.input.dict())
         for cell in self.cells:

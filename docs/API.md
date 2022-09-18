@@ -62,3 +62,17 @@ https://api.kucoin.com/api/v1/bullet-public, и из ответа
 (https://huobiapi.github.io/docs/spot/v1/en/#best-bid-offer)
 
 
+
+### GARANTEX 
+Во первых, на этой бирже есть API для P2P
+
+### ByBit
+(https://bybit-exchange.github.io/docs/futuresV2/linear/#t-websocketauthentication)
+Запутанная параша, ничего не понятно, документация говно 
+
+Сначала аутентификация. Для этого есть два метода: 
+ - По url прокинуть ключ и подпись. Чтобы получить подпись надо как то 
+магически её сделать HMAC-ом  
+
+
+

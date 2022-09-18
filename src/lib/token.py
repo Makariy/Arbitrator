@@ -11,8 +11,11 @@ class Token(BaseModel):
     exchange: Exchanges
     is_fiat = False
 
-    def is_the_same(self, other) -> bool:
+    def can_convert_to(self, other) -> bool:
         return self.symbol == other.symbol and (self.exchange == other.exchange or not self.is_fiat)
+
+    def is_the_same(self, other) -> bool:
+        return self.can_convert_to(other) and self.exchange == other.exchange
 
 
 class TokenExchange(BaseModel):

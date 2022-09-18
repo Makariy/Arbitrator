@@ -1,15 +1,13 @@
 from typing import List
-from datetime import datetime
 import logging
 import asyncio
 from itertools import product
 
-from layers.tracker.models import TokenExchanges, TokenExchange
-from layers.tracker.tracker import create_trackers
+from lib.token import TokenExchanges, TokenExchange
 
 from .chain import ExchangeChain, InvalidChain
 from .token_exchanges_fetcher import get_token_exchanges
-from .logger.logger import log_best_chains, print_best_chains
+from .logger.logger import log_best_chains
 
 from config import TO_TRACK, MAX_EXCHANGE_DEPTH, INPUT_TOKEN
 
@@ -92,18 +90,18 @@ async def filter_possible_chains(chains: List[ExchangeChain]) -> List[ExchangeCh
 
 
 async def _run_analyzer():
+    print("===" * 10)
     while True:
         all_token_exchanges = await get_all_token_exchanges()
         chains = await get_all_chains(all_token_exchanges)
         possible_chains = await filter_possible_chains(chains)
-        best_chains = sorted(possible_chains, key=lambda chain: chain.get_profit_percent(), reverse=True)[:20]
-        await log_best_chains(best_chains)
-        print("===" * 10)
+        best_chains = sorted(possible_chains, key=lambda a: a.get_profit_percent(), reverse=True)
+
         print("Current best chains: ")
         for chain in best_chains[:8]:
             print("Profit: ", chain.get_profit_percent(), " - ", chain)
-        # await print_best_chains()
         print("===" * 10)
+        await log_best_chains(best_chains)
         await asyncio.sleep(2)
 
 

@@ -5,7 +5,7 @@ from websockets import WebSocketClientProtocol
 
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges, ToTrack
-from layers.tracker.models import TokenExchanges, TokenExchange, Token
+from lib.token import TokenExchanges, TokenExchange, Token
 from layers.tracker.services.websocket_services import create_connection, recv_json, send_json
 
 from ..base import BaseTracker, BaseDispatcher

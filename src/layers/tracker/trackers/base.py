@@ -1,7 +1,7 @@
 from typing import List
 from abc import ABC, abstractmethod
 from websockets import WebSocketClientProtocol
-from layers.tracker.models import TokenExchanges
+from lib.token import TokenExchanges
 
 from lib.database import Database
 from lib.database.key_manager import create_key

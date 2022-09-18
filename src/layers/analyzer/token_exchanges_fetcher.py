@@ -5,7 +5,7 @@ from lib.database import Database
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges
 from lib.database.key_manager import create_key
-from layers.tracker.models import TokenExchanges
+from lib.token import TokenExchanges
 
 
 database = Database()

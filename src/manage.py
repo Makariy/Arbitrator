@@ -4,6 +4,7 @@ from lib.argparser import main_parser
 from lib.logging import configure_logging
 from layers.tracker.tracker import run_trackers
 from layers.analyzer.analyzer import run_analyzer
+from bot.bot import run_bot
 
 import config
 
@@ -14,6 +15,8 @@ def main(args):
         run_trackers(config.TO_TRACK)
     if args.command == "analyze":
         run_analyzer()
+    if args.command == "bot":
+        run_bot()
 
 
 if __name__ == "__main__":

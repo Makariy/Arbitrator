@@ -3,10 +3,9 @@ from typing import Dict, List
 import logging
 from websockets import WebSocketClientProtocol
 
-from layers.tracker.services.websocket_services import create_connection
 from layers.tracker.trackers.base import BaseTracker, BaseDispatcher
 from layers.tracker.services.websocket_services import recv_json, send_json
-from layers.tracker.models import TokenExchanges, TokenExchange, Token
+from lib.token import TokenExchanges, TokenExchange, Token
 
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges, ToTrack
@@ -116,13 +115,13 @@ class KuCoinTracker(BaseTracker):
         raise UnknownResponseException(message)
 
     async def init(self, to_track_list: List[ToTrack]):
-        await self.authorizer.authorize()
         for to_track in to_track_list:
             dispatcher = KuCoinDispatcher(input=to_track.input, output=to_track.output)
             await dispatcher.init()
             self.dispatchers.append(dispatcher)
 
     async def connect(self):
+        await self.authorizer.authorize()
         self.connection = await self.authorizer.open_connection()
         for dispatcher in self.dispatchers:
             await dispatcher.subscribe(self.connection)
