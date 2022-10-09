@@ -92,13 +92,9 @@ class BinanceDispatcher(BaseDispatcher):
     async def subscribe(self, connection: WebSocketClientProtocol):
         symbol = await self.get_symbol()
         self.channel = f"{symbol}@depth"
-        await send_json(connection, {
-            "method": "SUBSCRIBE",
-            "params": [
-                self.channel
-            ],
-            "id": self.ID
-        })
+
+    async def get_channel_name(self) -> str:
+        return self.channel
 
     async def _convert_binance_response_to_token_exchanges(self, response: BinanceBidResponse) -> TokenExchanges:
         token_exchanges = []
@@ -118,6 +114,8 @@ class BinanceDispatcher(BaseDispatcher):
     async def handle_message(self, message):
         binance_response = BinanceBidResponse(**message)
         token_exchanges = await self._convert_binance_response_to_token_exchanges(binance_response)
+        if token_exchanges.token_exchanges:
+            logger.info(f"Got bid for {self.input} to {self.output}: {token_exchanges.token_exchanges[0]}")
         await self.save_token_exchanges_to_database(token_exchanges)
 
 
@@ -134,8 +132,17 @@ class BinanceTracker(BaseTracker):
 
     async def connect(self):
         self.connection = await create_connection(config.BINANCE_BASE_WEBSOCKETS_URL)
+
+        channels = []
         for dispatcher in self.dispatchers:
             await dispatcher.subscribe(self.connection)
+            channels.append(await dispatcher.get_channel_name())
+
+        await send_json(self.connection, {
+            "method": "SUBSCRIBE",
+            "params": channels,
+            "id": 1
+        })
 
     async def _get_dispatcher_by_id(self, _id) -> BinanceDispatcher:
         for dispatcher in self.dispatchers:
