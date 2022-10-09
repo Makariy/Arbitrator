@@ -15,9 +15,12 @@ database = Database()
 def get_all_trackers() -> List[BaseTracker.__class__]:
     from .trackers.kucoin.kucoin_tracker import KuCoinTracker
     from .trackers.huobi.huobi_tracker import HuobiTracker
+    from .trackers.binance.binance_tracker import BinanceTracker
+
     return [
         KuCoinTracker,
-        HuobiTracker
+        HuobiTracker,
+        BinanceTracker
     ]
 
 
@@ -29,7 +32,7 @@ async def get_tracker_by_exchange(exchange: Exchanges) -> BaseTracker.__class__:
     raise ValueError(f"No such tracker for {exchange}")
 
 
-async def create_trackers_for_exchange(exchange: Exchanges, to_track_list: List[ToTrack]) -> BaseTracker:
+async def create_tracker_for_exchange(exchange: Exchanges, to_track_list: List[ToTrack]) -> BaseTracker:
     exchanges_to_track_list = list(filter(lambda a: a.exchange == exchange, to_track_list))
     tracker_cls = await get_tracker_by_exchange(exchange)
     tracker = tracker_cls()
@@ -41,7 +44,7 @@ async def create_trackers(to_track_list: List[ToTrack]) -> List[BaseTracker]:
     exchanges = set(map(lambda a: a.exchange, to_track_list))
     trackers = []
     for exchange in exchanges:
-        trackers.append(await create_trackers_for_exchange(exchange, to_track_list))
+        trackers.append(await create_tracker_for_exchange(exchange, to_track_list))
     return trackers
 
 
@@ -52,7 +55,7 @@ async def start_tracker(tracker: BaseTracker):
             await tracker.connect()
             await tracker.start_tracking()
         except (ConnectionError, WebSocketException) as error:
-            logger.warning(f"Connection error occurred: {error}")
+            logger.warning(f"Connection error occurred on tracker '{tracker.EXCHANGE}': {error}")
 
 
 async def _run_trackers(to_track_list: List[ToTrack]):
@@ -66,6 +69,7 @@ async def _run_trackers(to_track_list: List[ToTrack]):
 def _run_multiprocessing_tracker(tracker: BaseTracker):
     loop = asyncio.new_event_loop()
     loop.run_until_complete(start_tracker(tracker))
+    logger.error(f"Running tracker {tracker} stopped")
 
 
 def _run_multiprocessing_trackers(to_track_list: List[ToTrack]):

@@ -101,7 +101,7 @@ class HuobiTracker(BaseTracker):
         for dispatcher in self.dispatchers:
             await dispatcher.subscribe(self.connection)
 
-    async def dispatch_message(self, message: Dict):
+    async def _dispatch_message(self, message: Dict):
         channel = message.get("ch")
         if channel:
             dispatcher = await self._get_dispatcher_by_channel(channel)
@@ -125,5 +125,5 @@ class HuobiTracker(BaseTracker):
         logger.info(f"Starting tracking on {self.EXCHANGE}")
         while True:
             message = await self._recv_data()
-            await self.dispatch_message(message)
+            await self._dispatch_message(message)
 

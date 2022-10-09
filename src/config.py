@@ -6,16 +6,17 @@ from lib.symbols import Symbols
 from lib.exchanges import Exchanges, ToTrack
 
 
-LOG_LEVEL = logging.ERROR
+LOG_LEVEL = logging.INFO
+
 INPUT_TOKEN = Symbols.USDT
 
 
 REDIS_URL = "redis://0.0.0.0:6379/"
 
 KUCOIN_BASE_HTTP_URL = "https://api.kucoin.com"
-
 HUOBI_BASE_WEBSOCKETS_URL = "wss://api.huobi.pro/ws"
-HUOBI_ACCESS_KEY = os.environ.get('HUOBI_ACCESS_KEY')
+BINANCE_BASE_WEBSOCKETS_URL = "wss://stream.binance.com:9443/ws"
+
 
 TELEGRAM_API_TOKEN = os.environ.get("TELEGRAM_API_TOKEN")
 
@@ -61,15 +62,15 @@ TO_TRACK = [
     ToTrack(exchange=Exchanges.kucoin, input=Symbols.SOL, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.kucoin, input=Symbols.SHIB, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.kucoin, input=Symbols.AVAX, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.kucoin, input=Symbols.ATOM, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.kucoin, input=Symbols.XRP, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.kucoin, input=Symbols.WAVES, output=Symbols.USDT),
-
-    ToTrack(exchange=Exchanges.kucoin, input=Symbols.BTC, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.kucoin, input=Symbols.ETH, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.kucoin, input=Symbols.DOGE, output=Symbols.USDT),
-
-    ToTrack(exchange=Exchanges.kucoin, input=Symbols.SHIB, output=Symbols.DOGE),
+    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.ATOM, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.XRP, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.WAVES, output=Symbols.USDT),
+    #
+    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.BTC, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.ETH, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.DOGE, output=Symbols.USDT),
+    #
+    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.SHIB, output=Symbols.DOGE),
 
     # Huobi
     ToTrack(exchange=Exchanges.huobi, input=Symbols.MIR, output=Symbols.USDT),
@@ -77,13 +78,28 @@ TO_TRACK = [
     ToTrack(exchange=Exchanges.huobi, input=Symbols.SOL, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.huobi, input=Symbols.SHIB, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.huobi, input=Symbols.AVAX, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.ATOM, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.EOS, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.XRP, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.WAVES, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.huobi, input=Symbols.ATOM, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.huobi, input=Symbols.EOS, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.huobi, input=Symbols.XRP, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.huobi, input=Symbols.WAVES, output=Symbols.USDT),
+    #
+    # ToTrack(exchange=Exchanges.huobi, input=Symbols.DOGE, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.huobi, input=Symbols.BTC, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.huobi, input=Symbols.ETH, output=Symbols.USDT),
 
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.DOGE, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.BTC, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.ETH, output=Symbols.USDT),
+    # Binance
+    ToTrack(exchange=Exchanges.binance, input=Symbols.MIR, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.binance, input=Symbols.LUNA, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.binance, input=Symbols.SOL, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.binance, input=Symbols.SHIB, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.binance, input=Symbols.AVAX, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.binance, input=Symbols.ATOM, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.binance, input=Symbols.EOS, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.binance, input=Symbols.XRP, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.binance, input=Symbols.WAVES, output=Symbols.USDT),
+    #
+    # ToTrack(exchange=Exchanges.binance, input=Symbols.DOGE, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.binance, input=Symbols.BTC, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.binance, input=Symbols.ETH, output=Symbols.USDT),
 ]
 

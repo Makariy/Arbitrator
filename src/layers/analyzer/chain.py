@@ -60,9 +60,9 @@ class ExchangeChain(BaseModel):
 
         first_exchange = self.cells[0]
 
-        current_token = Token(**first_exchange.input.dict())
+        current_token = first_exchange.input.copy()
         for cell in self.cells:
-            price = current_token.price * cell.input.price / cell.output.price
+            price = current_token.price * (cell.input.price / cell.output.price)
             current_token = Token(price=price, symbol=cell.output.symbol, exchange=cell.output.exchange)
 
         return 1 - (first_exchange.input.price / current_token.price)

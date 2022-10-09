@@ -1,6 +1,10 @@
+import logging
 from aiogram import Bot, Dispatcher, executor
-import config
 from .handlers import handle_current_chain, handle_best_chains
+import config
+
+
+logger = logging.getLogger(__package__)
 
 
 def create_bot() -> Bot:
@@ -21,4 +25,5 @@ def _run_bot(bot: Bot):
 
 def run_bot():
     bot = create_bot()
+    logger.info(f"Starting the bot")
     _run_bot(bot)
