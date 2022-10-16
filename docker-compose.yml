@@ -15,3 +15,35 @@ services:
     environment:
       - REDIS_PORT_NUMBER=6379
 
+  tracker:
+    build: ./src
+    networks:
+      - main-network
+    depends_on:
+      - redis
+    command: python manage.py track
+
+  analyzer:
+    build: ./src
+    networks:
+      - main-network
+
+    command: python manage.py analyze
+
+    depends_on:
+      - redis
+      - tracker
+
+  bot:
+    build: ./src
+    networks:
+      - main-network
+
+    command: python manage.py bot
+    environment:
+      - TELEGRAM_API_TOKEN=$TELEGRAM_API_TOKEN
+
+    depends_on:
+      - redis
+      - tracker
+      - analyzer

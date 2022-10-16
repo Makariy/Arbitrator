@@ -14,6 +14,9 @@ class Database:
     async def get(self, key: str) -> str:
         return await self._redis.get(key)
 
+    async def mget(self, keys: List[str]):
+        return await self._redis.mget(keys)
+
     async def set(self, key: str, value: str):
         return await self._redis.set(key, value)
 

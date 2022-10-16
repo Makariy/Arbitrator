@@ -6,10 +6,11 @@ from itertools import product
 from lib.token import TokenExchanges, TokenExchange
 
 from .chain import ExchangeChain, InvalidChain
-from .token_exchanges_fetcher import get_token_exchanges
+from .token_exchanges_fetcher import bulk_get_token_exchanges
 from .logger.logger import log_best_chains
+from .timer import Timer
 
-from config import TO_TRACK, MAX_EXCHANGE_DEPTH, INPUT_TOKEN
+import config
 
 
 logger = logging.getLogger(__package__)
@@ -33,9 +34,13 @@ async def _reverse_token_exchanges(token_exchanges: TokenExchanges) -> TokenExch
 
 async def get_all_token_exchanges() -> List[TokenExchanges]:
     """Gets the current value of all the token exchanges that are configured to run from the database"""
-    token_exchanges = []
-    for to_track in TO_TRACK:
-        token_exchange = await get_token_exchanges(to_track.exchange, to_track.input, to_track.output)
+    raw_token_exchanges = list(
+        map(lambda to_track: (to_track.exchange, to_track.input, to_track.output), config.TO_TRACK)
+    )
+    token_exchanges = await bulk_get_token_exchanges(raw_token_exchanges)
+
+    valid_token_exchanges = []
+    for token_exchange, to_track in zip(token_exchanges, config.TO_TRACK):
         if token_exchanges is None:
             continue
 
@@ -43,10 +48,10 @@ async def get_all_token_exchanges() -> List[TokenExchanges]:
             logger.warning(f"No current exchanges for {to_track}")
             continue
 
-        token_exchanges.append(token_exchange)
-        token_exchanges.append(await _reverse_token_exchanges(token_exchange))
+        valid_token_exchanges.append(token_exchange)
+        valid_token_exchanges.append(await _reverse_token_exchanges(token_exchange))
 
-    return token_exchanges
+    return valid_token_exchanges
 
 
 async def check_if_can_exchange(token_exchange: TokenExchange) -> bool:
@@ -59,7 +64,7 @@ async def get_best_token_exchange_from_list(token_exchanges: TokenExchanges) -> 
             return token_exchange
 
 
-async def _get_all_combinations_by_depth(arr: List[TokenExchange], min_depth=2, max_depth=MAX_EXCHANGE_DEPTH):
+async def _get_all_combinations_by_depth(arr: List[TokenExchange], min_depth=2, max_depth=config.MAX_EXCHANGE_DEPTH):
     combinations = []
     for i in range(min_depth, max_depth + 1):
         combinations += product(*([arr] * i))
@@ -88,7 +93,7 @@ async def filter_possible_chains(chains: List[ExchangeChain]) -> List[ExchangeCh
     possible_chains = []
     for chain in chains:
         try:
-            if INPUT_TOKEN in [None, chain.cells[0].input.symbol]:
+            if config.INPUT_TOKEN in [None, chain.cells[0].input.symbol]:
                 chain.validate_chain()
                 possible_chains.append(chain)
         except InvalidChain:
@@ -104,18 +109,24 @@ async def _print_best_chains(best_chains: List[ExchangeChain]):
     print("===" * 10)
 
 
+async def analyze():
+    all_token_exchanges = await get_all_token_exchanges()
+    chains = await get_all_chains(all_token_exchanges)
+    possible_chains = await filter_possible_chains(chains)
+    profit_chains = list(filter(lambda a: a.get_profit_percent() > 0, possible_chains))
+
+    best_chains = sorted(profit_chains, key=lambda a: a.get_profit_percent(), reverse=True)
+
+    await _print_best_chains(best_chains)
+    await log_best_chains(best_chains)
+
+
 async def _run_analyzer():
+    timer = Timer(config.ANALYZE_PERIOD)
     while True:
-        all_token_exchanges = await get_all_token_exchanges()
-        chains = await get_all_chains(all_token_exchanges)
-        possible_chains = await filter_possible_chains(chains)
-        profit_chains = list(filter(lambda a: a.get_profit_percent() > 0, possible_chains))
-
-        best_chains = sorted(profit_chains, key=lambda a: a.get_profit_percent(), reverse=True)
-
-        await _print_best_chains(best_chains)
-        await log_best_chains(best_chains)
-        await asyncio.sleep(1)
+        await timer.start()
+        await analyze()
+        await timer.wait_for_next_iteration()
 
 
 def run_analyzer():

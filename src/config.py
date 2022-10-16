@@ -9,9 +9,10 @@ from lib.exchanges import Exchanges, ToTrack
 LOG_LEVEL = logging.INFO
 
 INPUT_TOKEN = Symbols.USDT
+ANALYZE_PERIOD = 1  # In seconds
 
 
-REDIS_URL = "redis://0.0.0.0:6379/"
+REDIS_URL = os.environ.get("REDIS_URL", "redis://0.0.0.0:6379/")
 
 KUCOIN_BASE_HTTP_URL = "https://api.kucoin.com"
 HUOBI_BASE_WEBSOCKETS_URL = "wss://api.huobi.pro/ws"
