@@ -1,13 +1,16 @@
 from typing import List, Dict
 
 from websockets import WebSocketClientProtocol
-from pydantic import BaseModel, validator
 
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges, ToTrack
 from lib.token import TokenExchanges, TokenExchange, Token
 from layers.tracker.services.websocket_services import create_connection, send_json, recv_json
-from layers.tracker.trackers.base import BaseTracker, BaseDispatcher
+
+from .binance_responses import BinanceBidResponse
+
+from ..base import BaseTracker, BaseDispatcher
+from ..exceptions import UnknownResponseException, ErrorResponseException, NoSuchDispatcherException
 
 import logging
 import config
@@ -34,47 +37,6 @@ BINANCE_SYMBOLS = {
     Symbols.EUR: "eur",
     Symbols.RUB: "rub",
 }
-
-
-class BinanceBid(BaseModel):
-    price: float
-    count: float
-
-
-class BinanceBidResponse(BaseModel):
-    event_type: str
-    event_time: int
-    symbol: str
-    first_update_id: int
-    final_update_id: int
-    bids: List[BinanceBid]
-    asks: List[BinanceBid]
-
-    @staticmethod
-    def _parse_bids(value: List[List[int]]):
-        result = []
-        for bid in value:
-            result.append(BinanceBid(price=bid[0], count=bid[1]))
-        return result
-
-    @validator("bids", pre=True)
-    def set_bids(value: List[List[int]]):
-        return BinanceBidResponse._parse_bids(value)
-
-    @validator("asks", pre=True)
-    def set_asks(value: List[List[int]]):
-        return BinanceBidResponse._parse_bids(value)
-
-    class Config:
-        fields = {
-            "event_type": "e",
-            "event_time": "E",
-            "symbol": "s",
-            "first_update_id": "U",
-            "final_update_id": "u",
-            "bids": "b",
-            "asks": "a"
-        }
 
 
 class BinanceDispatcher(BaseDispatcher):
@@ -149,14 +111,14 @@ class BinanceTracker(BaseTracker):
             if dispatcher.ID == _id:
                 return dispatcher
 
-        raise ValueError("There is no such dispatcher with this ID")
+        raise NoSuchDispatcherException("There is no such dispatcher with this ID")
 
     async def _get_dispatcher_by_symbol(self, symbol: str) -> BinanceDispatcher:
         for dispatcher in self.dispatchers:
             if await dispatcher.get_symbol() == symbol.lower():
                 return dispatcher
 
-        raise ValueError("There is no such dispatcher for this symbol")
+        raise NoSuchDispatcherException("There is no such dispatcher for this symbol")
 
     async def _dispatch_message(self, message: Dict):
         _id = message.get("id")

@@ -4,7 +4,7 @@ from websockets import WebSocketClientProtocol
 from lib.token import TokenExchanges
 
 from lib.database import Database
-from lib.database.key_manager import create_key
+from lib.database.key_manager import create_key_for_current_exchange
 
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges, ToTrack
@@ -24,7 +24,7 @@ class BaseDispatcher(ABC):
         self.output = output
 
     async def save_token_exchanges_to_database(self, token_exchanges: TokenExchanges):
-        key = create_key(self.EXCHANGE, self.input, self.output)
+        key = await create_key_for_current_exchange(self.EXCHANGE, self.input, self.output)
         await database.set(key, token_exchanges.json())
 
     async def init(self, *args, **kwargs):

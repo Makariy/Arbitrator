@@ -80,5 +80,5 @@ def _run_multiprocessing_trackers(to_track_list: List[ToTrack]):
 
 
 def run_trackers(to_track_list: List[ToTrack]):
-    # asyncio.run(_run_trackers(to_track_list))
-    _run_multiprocessing_trackers(to_track_list)
+    asyncio.run(_run_trackers(to_track_list))
+    # _run_multiprocessing_trackers(to_track_list)

@@ -9,6 +9,7 @@ from lib.token import TokenExchanges, TokenExchange, Token
 from layers.tracker.services.websocket_services import create_connection, recv_json, send_json
 
 from ..base import BaseTracker, BaseDispatcher
+from ..exceptions import UnknownResponseException, ErrorResponseException, NoSuchDispatcherException
 
 from .huobi_responses import HuobiMarketDepthResponse, HuobiAcknowledgment
 import config
@@ -90,7 +91,7 @@ class HuobiTracker(BaseTracker):
             if dispatcher.channel == channel:
                 return dispatcher
 
-        raise ValueError("There is no such dispatcher for the received channel")
+        raise NoSuchDispatcherException("There is no such dispatcher for the received channel")
 
     async def init(self, to_track_list: List[ToTrack]):
         for to_track in to_track_list:
@@ -119,7 +120,7 @@ class HuobiTracker(BaseTracker):
             await self._send_pong(ping)
             return
 
-        raise ValueError(f"Received an unknown message from server: {message}")
+        raise UnknownResponseException(f"Received an unknown message from server: {message}")
 
     async def start_tracking(self):
         logger.info(f"Starting tracking on {self.EXCHANGE}")

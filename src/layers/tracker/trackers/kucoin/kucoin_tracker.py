@@ -11,8 +11,8 @@ from lib.symbols import Symbols
 from lib.exchanges import Exchanges, ToTrack
 from lib.database import Database
 from .kucoin_authorizer import KuCoinAuthorizer
-from .kucoin_ping_handler import KuCoinPingHandler
-from .kucoin_exceptions import UnknownResponseException, ErrorResponseException
+from .kucoin_pinger import KuCoinPinger
+from ..exceptions import UnknownResponseException, ErrorResponseException, NoSuchDispatcherException
 from .kucoin_responses import KuCoinAcknowledgment, \
     KuCoinBidResponse, \
     KuCoinBidResponseData
@@ -61,7 +61,7 @@ class KuCoinDispatcher(BaseDispatcher):
     async def handle_acknowledgment(self, ack: Dict) -> KuCoinAcknowledgment:
         ack = KuCoinAcknowledgment(**ack)
         if ack.type == "error":
-            raise ValueError(f"Server responded with an error: {ack.code} - {ack.data}")
+            raise ErrorResponseException(f"Server responded with an error: {ack.code} - {ack.data}")
         return ack
 
     async def handle_message(self, message: Dict):
@@ -86,14 +86,14 @@ class KuCoinTracker(BaseTracker):
     EXCHANGE = Exchanges.kucoin
 
     authorizer = KuCoinAuthorizer()
-    ping_handler = KuCoinPingHandler()
+    pinger: KuCoinPinger
 
     async def _get_dispatcher_by_topic(self, topic: str) -> BaseDispatcher:
         for dispatcher in self.dispatchers:
             if dispatcher.channel == topic:
                 return dispatcher
 
-        raise ValueError(f"No such dispatcher for topic: '{topic}'")
+        raise NoSuchDispatcherException(f"No such dispatcher for topic: '{topic}'")
 
     async def _dispatch_message(self, message: Dict):
         type = message.get("type")
@@ -102,7 +102,7 @@ class KuCoinTracker(BaseTracker):
             return await dispatcher.handle_message(message)
 
         elif type == "pong":
-            return await self.ping_handler.handle_pong(message)
+            return await self.pinger.handle_pong(message)
 
         elif type == "error":
             logger.error(f"Got error in response: {message}")
@@ -123,22 +123,25 @@ class KuCoinTracker(BaseTracker):
     async def connect(self):
         await self.authorizer.authorize()
         self.connection = await self.authorizer.open_connection()
+        self.pinger = KuCoinPinger(self.connection, self.authorizer.token)
         for dispatcher in self.dispatchers:
             await dispatcher.subscribe(self.connection)
-        await self.ping_handler.set_connection(self.connection)
 
     async def start_tracking(self):
+        ping_task = await self.pinger.start_pinging()
+
         try:
             while True:
-                if await self.ping_handler.is_time_to_ping():
-                    await self.ping_handler.ping(self.authorizer.token)
-
                 message = await recv_json(self.connection)
                 await self._dispatch_message(message)
 
         except ConnectionError as error:
             logger.error(f"Server closed the connection: {error}")
+            raise
 
         finally:
+            if not ping_task.done():
+                ping_task.cancel()
+
             if self.connection.open:
                 await self.connection.close()

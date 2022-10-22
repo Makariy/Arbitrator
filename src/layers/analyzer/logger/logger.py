@@ -2,32 +2,24 @@ from typing import List, Optional
 
 import json
 from lib.database import Database
-from lib.symbols import Symbols, join_symbols
+from lib.symbols import Symbols
+from lib.database.key_manager import create_key_for_best_chain, \
+    create_key_for_current_chain, \
+    BEST_CHAIN_KEY
 from ..chain import ExchangeChain
 
 
 database = Database()
 
-BEST_CHAIN_KEY = "bestchain"
-CURRENT_CHAIN_KEY = "currentchain"
-
-
-async def make_key_for_best_chain(symbols: List[Symbols]) -> str:
-    return f"{BEST_CHAIN_KEY}_{await join_symbols(symbols)}"
-
-
-async def make_key_for_current_chain(symbols: List[Symbols]) -> str:
-    return f"{CURRENT_CHAIN_KEY}_{await join_symbols(symbols)}"
-
 
 async def set_best_chain(chain: ExchangeChain):
     symbols = chain.get_chain_symbols()
-    key = await make_key_for_best_chain(symbols)
+    key = await create_key_for_best_chain(symbols)
     await database.set(key, chain.json())
 
 
 async def get_best_chain(symbols: List[Symbols]) -> Optional[ExchangeChain]:
-    key = await make_key_for_best_chain(symbols)
+    key = await create_key_for_best_chain(symbols)
     raw_best_chain = await database.get(key)
     if raw_best_chain is not None:
         return ExchangeChain(**json.loads(raw_best_chain))
@@ -47,11 +39,11 @@ async def get_all_best_chains() -> List[ExchangeChain]:
 async def save_current_chains(best_chains: List[ExchangeChain]):
     for chain in best_chains:
         symbols = chain.get_chain_symbols()
-        await database.set(await make_key_for_current_chain(symbols), chain.json())
+        await database.set(await create_key_for_current_chain(symbols), chain.json())
 
 
 async def get_current_chain(symbols: List[Symbols]) -> Optional[ExchangeChain]:
-    raw_chain = await database.get(await make_key_for_current_chain(symbols))
+    raw_chain = await database.get(await create_key_for_current_chain(symbols))
     if raw_chain is None:
         return None
     return ExchangeChain(**json.loads(raw_chain))

@@ -27,10 +27,10 @@ class Logger:
 class ConfigParser:
     @staticmethod
     def ensure_dict_contains(dictionary: Dict, keys: List[str],
-                             error_message: str = "There is no such {key} in the dict"):
+                             error_message: str = "There is no such key '{key}' in the dict"):
         for key in keys:
             if key not in dictionary.keys():
-                raise ValueError(error_message.format({"key": key}))
+                raise ValueError(error_message.format(key=key))
 
 
 class Configurator:
