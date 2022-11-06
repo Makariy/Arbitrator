@@ -5,7 +5,7 @@ from websockets import WebSocketClientProtocol
 
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges, ToTrack
-from lib.token import TokenExchanges, TokenExchange, Token
+from lib.models import TokenExchanges, TokenExchange, Token
 from layers.tracker.services.websocket_services import create_connection, recv_json, send_json
 
 from ..base import BaseTracker, BaseDispatcher
@@ -49,7 +49,8 @@ class HuobiDispatcher(BaseDispatcher):
                 input=Token(price=1, symbol=self.input, exchange=self.EXCHANGE),
                 output=Token(price=bid.price, symbol=self.output, exchange=self.EXCHANGE),
                 count=bid.count,
-                exchange=self.EXCHANGE
+                exchange=self.EXCHANGE,
+                timestamp=response.timestamp / 1000
             )
             token_exchanges.append(token_exchange)
         return TokenExchanges(token_exchanges=token_exchanges)

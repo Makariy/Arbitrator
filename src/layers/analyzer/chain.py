@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel
 from lib.symbols import Symbols
-from lib.token import TokenExchange, Token
+from lib.models import TokenExchange, Token
 
 
 class InvalidChain(Exception):
@@ -30,7 +30,7 @@ class ExchangeChain(BaseModel):
     def _get_last_cell(self) -> TokenExchange:
         if len(self.cells) == 0:
             raise IndexError("There are no cells")
-        return self.cells[len(self.cells) - 1]
+        return self.cells[-1]
 
     def validate_chain(self):
         if len(self.cells) < 2:

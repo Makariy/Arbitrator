@@ -24,6 +24,7 @@ class TokenExchange(BaseModel):
     count: float
     exchange: Exchanges
     commission: float = 0
+    timestamp: float
 
 
 class TokenExchanges(BaseModel):

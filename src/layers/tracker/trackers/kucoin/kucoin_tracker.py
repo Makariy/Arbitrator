@@ -1,3 +1,4 @@
+import asyncio
 from typing import Dict, List
 
 import logging
@@ -5,7 +6,7 @@ from websockets import WebSocketClientProtocol
 
 from layers.tracker.trackers.base import BaseTracker, BaseDispatcher
 from layers.tracker.services.websocket_services import recv_json, send_json
-from lib.token import TokenExchanges, TokenExchange, Token
+from lib.models import TokenExchanges, TokenExchange, Token
 
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges, ToTrack
@@ -53,7 +54,8 @@ class KuCoinDispatcher(BaseDispatcher):
                 input=Token(price=1, symbol=self.input, exchange=self.EXCHANGE),
                 output=Token(price=ask.price, symbol=self.output, exchange=self.EXCHANGE),
                 count=ask.count,
-                exchange=self.EXCHANGE
+                exchange=self.EXCHANGE,
+                timestamp=bid.timestamp / 1000
             )
             token_exchanges.append(token_exchange)
         return TokenExchanges(token_exchanges=token_exchanges)
@@ -128,7 +130,7 @@ class KuCoinTracker(BaseTracker):
             await dispatcher.subscribe(self.connection)
 
     async def start_tracking(self):
-        ping_task = await self.pinger.start_pinging()
+        ping_task = asyncio.create_task(self.pinger.start_pinging())
 
         try:
             while True:

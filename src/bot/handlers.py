@@ -1,10 +1,8 @@
 import logging
 from aiogram import types
 from lib.symbols import Symbols
-from layers.analyzer.logger.logger import get_all_best_chains, \
-    get_current_chain, \
-    format_chains, \
-    format_chain
+from layers.analyzer.chain_services import get_all_best_chains, get_current_chain
+from layers.analyzer.logger import format_chains, format_chain
 
 
 logger = logging.getLogger(__package__)

@@ -3,12 +3,14 @@ import logging
 import asyncio
 from itertools import product
 
-from lib.token import TokenExchanges, TokenExchange
+from lib.models import TokenExchanges, TokenExchange
 
 from .chain import ExchangeChain, InvalidChain
 from .token_exchanges_fetcher import bulk_get_token_exchanges
-from .logger.logger import log_best_chains
+from .logger.logger import log_best_chains, format_chains
 from .timer import Timer
+
+from layers.acquirer.receiver import send_profitable_chain
 
 import config
 
@@ -22,6 +24,7 @@ async def _reverse_token_exchange(token_exchange: TokenExchange) -> TokenExchang
         output=token_exchange.input,
         count=1 / token_exchange.count,
         exchange=token_exchange.exchange,
+        timestamp=token_exchange.timestamp,
         commission=token_exchange.commission
     )
 
@@ -33,11 +36,11 @@ async def _reverse_token_exchanges(token_exchanges: TokenExchanges) -> TokenExch
 
 
 async def get_all_token_exchanges() -> List[TokenExchanges]:
-    """Gets the current value of all the token exchanges that are configured to run from the database"""
-    raw_token_exchanges = list(
+    """Gets the current value of all the token exchanges"""
+    token_exchanges_keys = list(
         map(lambda to_track: (to_track.exchange, to_track.input, to_track.output), config.TO_TRACK)
     )
-    token_exchanges = await bulk_get_token_exchanges(raw_token_exchanges)
+    token_exchanges = await bulk_get_token_exchanges(token_exchanges_keys)
 
     valid_token_exchanges = []
     for token_exchange, to_track in zip(token_exchanges, config.TO_TRACK):
@@ -102,10 +105,19 @@ async def filter_possible_chains(chains: List[ExchangeChain]) -> List[ExchangeCh
     return possible_chains
 
 
+async def check_if_chain_is_profitable(chain: ExchangeChain) -> bool:
+    return chain.get_profit_percent() > config.MINIMAL_PROFIT_PERCENT
+
+
+async def send_chains_if_profitable(chains: List[ExchangeChain]):
+    for chain in chains:
+        if await check_if_chain_is_profitable(chain):
+            await send_profitable_chain(chain)
+
+
 async def _print_best_chains(best_chains: List[ExchangeChain]):
     print("Current best chains: ")
-    for chain in best_chains[:8]:
-        print("Profit: ", chain.get_profit_percent(), " - ", chain)
+    print(await format_chains(best_chains[:8]))
     print("===" * 10)
 
 
@@ -117,6 +129,7 @@ async def analyze():
 
     best_chains = sorted(profit_chains, key=lambda a: a.get_profit_percent(), reverse=True)
 
+    await send_chains_if_profitable(best_chains)
     await _print_best_chains(best_chains)
     await log_best_chains(best_chains)
 

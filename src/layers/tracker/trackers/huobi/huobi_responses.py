@@ -17,7 +17,7 @@ class HuobiMarketDepthTickBid(BaseModel):
 class HuobiMarketDepthTick(BaseModel):
     bids: List[HuobiMarketDepthTickBid]
     version: int
-    timestamp: int
+    timestamp: float
 
     @validator("bids", pre=True)
     def set_bids(value):

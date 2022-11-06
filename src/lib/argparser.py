@@ -6,6 +6,7 @@ main_parser.add_argument('file', type=str, help='Executive file')
 main_parser.add_argument('command', choices=[
                                 'track',
                                 'analyze',
+                                'acquirer',
                                 'bot'
                             ],
                          type=str, help='Command to execute')

@@ -5,7 +5,7 @@ from lib.database import Database
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges
 from lib.database.key_manager import create_key_for_current_exchange
-from lib.token import TokenExchanges
+from lib.models import TokenExchanges
 
 database = Database()
 

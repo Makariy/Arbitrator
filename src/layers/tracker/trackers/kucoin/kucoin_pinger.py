@@ -37,14 +37,9 @@ class KuCoinPinger:
     async def ping(self):
         await send_json(self._connection, {"type": "ping", "id": self._subscription_id})
 
-    async def _start_pinging(self):
+    async def start_pinging(self):
         while True:
             if await self._is_time_to_ping():
                 await self.ping()
                 await self._reset_time_to_ping()
             await asyncio.sleep(PING_PERIOD / 10)
-
-    async def start_pinging(self) -> asyncio.Task:
-        """Creates a task for pinging the server"""
-        task = asyncio.create_task(self._start_pinging())
-        return task
