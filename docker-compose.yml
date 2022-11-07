@@ -19,6 +19,9 @@ services:
     build: ./src
     networks:
       - main-network
+    volumes:
+      - ./src/config.py:/app/config.py:ro
+
     depends_on:
       - redis
     command: python manage.py track
@@ -27,6 +30,8 @@ services:
     build: ./src
     networks:
       - main-network
+    volumes:
+      - ./src/config.py:/app/config.py:ro
 
     command: python manage.py analyze
 
@@ -34,10 +39,26 @@ services:
       - redis
       - tracker
 
+  acquirer:
+    build: ./src
+    networks:
+      - main-network
+    volumes:
+      - ./src/config.py:/app/config.py:ro
+
+    command: python manage.py acquirer
+
+    depends_on:
+      - redis
+      - tracker
+      - analyzer
+
   bot:
     build: ./src
     networks:
       - main-network
+    volumes:
+      - ./src/config.py:/app/config.py:ro
 
     command: python manage.py bot
     environment:

@@ -60,7 +60,7 @@ async def _create_acquirers() -> List[Acquirer]:
 
 async def _run_acquirer():
     acquirers = await _create_acquirers()
-    asyncio.get_running_loop().run_forever()
+    await asyncio.gather(*asyncio.all_tasks())
 
 
 def run_acquirer():

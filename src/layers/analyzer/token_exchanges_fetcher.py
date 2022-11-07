@@ -25,4 +25,7 @@ async def bulk_get_token_exchanges(raw_exchanges: List[Tuple[Exchanges, Symbols,
         for raw_exchange in raw_exchanges
     ]
     results = await database.mget(keys)
-    return [TokenExchanges.parse_raw(raw_token_exchanges) for raw_token_exchanges in results]
+    return [
+        TokenExchanges.parse_raw(raw_token_exchanges)
+        for raw_token_exchanges in filter(lambda a: a is not None, results)
+    ]
