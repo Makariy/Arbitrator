@@ -1,8 +1,10 @@
 import logging
 from aiogram import types
+
 from lib.symbols import Symbols
-from layers.analyzer.chain_services import get_all_best_chains, get_current_chain
-from layers.analyzer.logger import format_chains, format_chain
+
+from layers.analyzer.chain_services import get_current_chain
+from layers.analyzer.logger import format_chain
 
 
 logger = logging.getLogger(__package__)
@@ -30,9 +32,3 @@ async def handle_current_chain(message: types.Message):
 
     await message.reply(await format_chain(chain))
 
-
-async def handle_best_chains(message: types.Message):
-    best_chains = await get_all_best_chains()
-    formatted_chains = await format_chains(best_chains)
-    logger.info(f"Sending best chains")
-    await message.reply(formatted_chains)

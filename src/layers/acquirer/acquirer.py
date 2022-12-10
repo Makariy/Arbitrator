@@ -11,7 +11,6 @@ from .receiver import subscribe
 from layers.analyzer.chain import ExchangeChain
 from layers.analyzer.chain_services import get_all_chains
 from layers.analyzer.chain_services import get_current_chain
-import config
 
 
 class Acquirer:
