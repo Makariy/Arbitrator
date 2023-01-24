@@ -52,8 +52,13 @@ class BinanceDispatcher(BaseDispatcher):
         return f"{input}{output}"
 
     async def subscribe(self, connection: WebSocketClientProtocol):
-        symbol = await self.get_symbol()
-        self.channel = f"{symbol}@depth"
+        await send_json(connection, {
+            "method": "SUBSCRIBE",
+            "params": [
+                f"{await self.get_symbol()}@depth"
+            ],
+            "id": self.ID
+        })
 
     async def get_channel_name(self) -> str:
         return self.channel
@@ -90,22 +95,14 @@ class BinanceTracker(BaseTracker):
         for i in range(len(to_track_list)):
             to_track = to_track_list[i]
             dispatcher = BinanceDispatcher(to_track.input, to_track.output)
-            await dispatcher.init(i + 1)
+            await dispatcher.init(_id=i)
             self.dispatchers.append(dispatcher)
 
     async def connect(self):
         self.connection = await create_connection(config.BINANCE_BASE_WEBSOCKETS_URL)
 
-        channels = []
         for dispatcher in self.dispatchers:
             await dispatcher.subscribe(self.connection)
-            channels.append(await dispatcher.get_channel_name())
-
-        await send_json(self.connection, {
-            "method": "SUBSCRIBE",
-            "params": channels,
-            "id": 1
-        })
 
     async def _get_dispatcher_by_id(self, _id) -> BinanceDispatcher:
         for dispatcher in self.dispatchers:
@@ -121,9 +118,15 @@ class BinanceTracker(BaseTracker):
 
         raise NoSuchDispatcherException("There is no such dispatcher for this symbol")
 
+    async def _dispatch_error(self, error: Dict):
+        logger.error(f"Got an error from server: {error}")
+        raise ErrorResponseException(error)
+
     async def _dispatch_message(self, message: Dict):
-        _id = message.get("id")
-        if _id is not None:
+        if message.get("result") is not None:
+            return self._dispatch_error(message)
+
+        if message.get("id") is not None:
             dispatcher = await self._get_dispatcher_by_id(message.get("id"))
             await dispatcher.handle_ack(message)
             return

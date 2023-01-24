@@ -6,7 +6,7 @@ from json.decoder import JSONDecodeError
 
 async def create_connection(url: str) -> Optional[websockets.WebSocketClientProtocol]:
     try:
-        return await websockets.connect(url)
+        return await websockets.connect(url, ping_timeout=None)
     except ConnectionRefusedError:
         return None
 
