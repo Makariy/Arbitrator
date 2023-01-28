@@ -3,7 +3,7 @@ from aiogram import types
 
 from lib.symbols import Symbols
 from lib.exchanges import Exchanges
-from .utils import get_current_price
+from bot.services.utils import get_current_price
 
 
 async def _get_symbols_by_name(raw_symbols: List[str]) -> List[Symbols]:

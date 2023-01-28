@@ -8,7 +8,7 @@ from lib.models import TokenExchanges, TokenExchange
 from .chain import ExchangeChain, InvalidChain
 from .token_exchanges_fetcher import bulk_get_token_exchanges
 from .logger.logger import log_best_chains, format_chains
-from .timer import Timer
+from utils.timer import Timer
 
 from layers.acquirer.receiver import send_profitable_chain
 

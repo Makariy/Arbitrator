@@ -8,6 +8,8 @@ BEST_CHAIN_KEY = "bestchain"
 CURRENT_CHAIN_KEY = "currentchain"
 PROFIT_CHAIN_PUBSUB_KEY = "profit_pubsub"
 
+USER_KEY = "user"
+
 
 async def create_key_for_current_exchange(exchange: Exchanges, input: Symbols, output: Symbols) -> str:
     return f"{CURRENT_EXCHANGE_KEY}_{exchange.value}_{input.value}-{output.value}"
@@ -23,4 +25,9 @@ async def create_key_for_current_chain(symbols: List[Symbols]) -> str:
 
 async def create_key_for_profit_chain_pubsub(symbols: List[Symbols]) -> str:
     return f"{PROFIT_CHAIN_PUBSUB_KEY}_{await join_symbols(symbols)}"
+
+
+async def create_key_for_user_by_telegram_id(telegram_id: int) -> str:
+    return f"{USER_KEY}_{telegram_id}"
+
 

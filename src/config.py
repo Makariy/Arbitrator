@@ -12,6 +12,9 @@ INPUT_TOKEN = Symbols.USDT
 ANALYZE_PERIOD = 1  # In seconds
 MINIMAL_PROFIT_PERCENT = 0.06
 
+NOTIFICATION_EXCHANGE = Exchanges.huobi
+NOTIFICATION_CHECK_PERIOD = 1  # In Seconds
+
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://0.0.0.0:6379/")
 
@@ -90,7 +93,7 @@ TO_TRACK = [
     # ToTrack(exchange=Exchanges.huobi, input=Symbols.WAVES, output=Symbols.USDT),
     #
     # ToTrack(exchange=Exchanges.huobi, input=Symbols.DOGE, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.BTC, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.BTC, output=Symbols.USDT),
     # ToTrack(exchange=Exchanges.huobi, input=Symbols.ETH, output=Symbols.USDT),
 
     # Binance
@@ -105,7 +108,7 @@ TO_TRACK = [
     # ToTrack(exchange=Exchanges.binance, input=Symbols.WAVES, output=Symbols.USDT),
     #
     # ToTrack(exchange=Exchanges.binance, input=Symbols.DOGE, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.binance, input=Symbols.BTC, output=Symbols.USDT),
+    # ToTrack(exchange=Exchanges.binance, input=Symbols.BTC, output=Symbols.USDT),
     # ToTrack(exchange=Exchanges.binance, input=Symbols.ETH, output=Symbols.USDT),
 ]
 
