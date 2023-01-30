@@ -84,16 +84,22 @@ TO_TRACK = [
     # Huobi
     # ToTrack(exchange=Exchanges.huobi, input=Symbols.MIR, output=Symbols.USDT),
     # ToTrack(exchange=Exchanges.huobi, input=Symbols.LUNA, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.SOL, output=Symbols.USDT),
     # ToTrack(exchange=Exchanges.huobi, input=Symbols.SHIB, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.AVAX, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.ATOM, output=Symbols.USDT),
     # ToTrack(exchange=Exchanges.huobi, input=Symbols.EOS, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.XRP, output=Symbols.USDT),
     # ToTrack(exchange=Exchanges.huobi, input=Symbols.WAVES, output=Symbols.USDT),
     #
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.DOGE, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.DOGE, output=Symbols.USDT),
     ToTrack(exchange=Exchanges.huobi, input=Symbols.BTC, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.SOL, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.AVAX, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.ATOM, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.XRP, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.APT, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.MAGIC, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.MINA, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.KAVA, output=Symbols.USDT),
+    ToTrack(exchange=Exchanges.huobi, input=Symbols.NEAR, output=Symbols.USDT),
+
     # ToTrack(exchange=Exchanges.huobi, input=Symbols.ETH, output=Symbols.USDT),
 
     # Binance

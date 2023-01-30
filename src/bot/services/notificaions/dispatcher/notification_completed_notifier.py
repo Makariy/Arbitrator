@@ -2,6 +2,7 @@ from aiogram import Bot
 
 from bot.services.user.models import (
     User,
+    Directions,
     NOTIFICATION_TYPES,
     PriceLimitNotification,
     NotificationType
@@ -9,8 +10,9 @@ from bot.services.user.models import (
 
 
 async def _notify_price_limit_notification_completed(bot: Bot, user: User, notification: PriceLimitNotification):
+    direction = 'over' if notification.direction is Directions.UP else 'beneath'
     await bot.send_message(
-        text=f"{notification.input.value} price overcame the limit {notification.limit}",
+        text=f"{notification.input.value} price passed {direction} {notification.limit}",
         chat_id=user.telegram_id
     )
 

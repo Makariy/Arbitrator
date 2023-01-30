@@ -67,4 +67,6 @@ services:
     depends_on:
       - redis
       - tracker
-      - analyzer
+
+
+

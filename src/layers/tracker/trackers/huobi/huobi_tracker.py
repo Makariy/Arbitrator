@@ -20,6 +20,13 @@ logger = logging.getLogger(__package__)
 
 HUOBI_SYMBOLS = {
     Symbols.USDT: "usdt",
+
+    Symbols.APT: "apt",
+    Symbols.MAGIC: "magic",
+    Symbols.MINA: "mina",
+    Symbols.KAVA: "kava",
+    Symbols.NEAR: "near",
+
     Symbols.LUNA: "luna",
     Symbols.MIR: "mir",
     Symbols.SOL: "sol",

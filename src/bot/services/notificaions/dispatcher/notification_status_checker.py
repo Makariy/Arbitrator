@@ -21,6 +21,7 @@ async def _is_price_limit_notification_completed(notification: PriceLimitNotific
         return True
     elif direction == Directions.DOWN and current_price <= limit:
         return True
+    return False
 
 
 NOTIFICATION_TYPE_TO_CHECKER_MAP = {

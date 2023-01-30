@@ -2,8 +2,9 @@ from typing import List
 from aiogram import types
 
 from lib.symbols import Symbols
-from lib.exchanges import Exchanges
 from bot.services.utils import get_current_price
+
+from config import NOTIFICATION_EXCHANGE
 
 
 async def _get_symbols_by_name(raw_symbols: List[str]) -> List[Symbols]:
@@ -31,7 +32,7 @@ async def handle_get_price(message: types.Message):
 
     formatted_prices = "\n".join([
         await format_price_for_symbol(
-            price=await get_current_price(Exchanges.binance, input=symbol, output=Symbols.USDT),
+            price=await get_current_price(NOTIFICATION_EXCHANGE, input=symbol, output=Symbols.USDT),
             symbol=symbol
         ) for symbol in symbols
     ])
