@@ -4,8 +4,8 @@ from lib.database import Database
 from lib.database.key_manager import USER_KEY
 from lib.database.key_manager import create_key_for_user_by_telegram_id
 
-from bot.services.user.models import User
 from .models import User, NOTIFICATION_TYPES
+from .notifications_manager import sort_notifications
 
 import logging
 
@@ -46,6 +46,7 @@ async def get_all_users() -> List[User]:
 
 
 async def save_user_to_db(user: User):
+    user.notifications = await sort_notifications(user.notifications)
     key = await create_key_for_user_by_telegram_id(user.telegram_id)
     await database.set(key, user.json())
 

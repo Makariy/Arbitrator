@@ -13,7 +13,7 @@ HELP_TEXT = """
 
 /notify <symbol> <price> <direction> - receive a notification when <symbol>'s price goes above or below the <price>
 /notifications - list pending notifications 
-/remove_notification <index> - delete notification number <index>
+/remove <index> <index> ... - delete notifications on indexes <index> <index> ... 
 """
 
 

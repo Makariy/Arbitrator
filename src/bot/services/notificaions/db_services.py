@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 from lib.exchanges import Exchanges
 from lib.symbols import Symbols
 
@@ -41,23 +41,6 @@ async def create_price_limit_notification_for_user(
 
     await add_notification_to_user(user, notification)
     await save_user_to_db(user)
-
-
-async def pop_notification_from_user_by_index(
-        telegram_id: int,
-        notification_index: int
-) -> NOTIFICATION_TYPES:
-    user = await get_user_from_db_by_telegram_id(telegram_id)
-    if user is None:
-        raise UserDoesNotExist()
-
-    if not 0 <= notification_index < len(user.notifications):
-        raise IncorrectNotificationIndexError()
-
-    notification = user.notifications[notification_index]
-    await remove_notification_for_user(user, notification)
-    await save_user_to_db(user)
-    return notification
 
 
 async def get_user_notifications(telegram_id: int) -> List[NOTIFICATION_TYPES]:

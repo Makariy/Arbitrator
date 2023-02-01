@@ -21,8 +21,7 @@ async def dispatch_user_notifications(bot: Bot, user: User):
         if await is_notification_completed(notification):
             await notify_notification_completed(bot, user, notification)
             await remove_notification_for_user(user, notification)
-
-    await save_user_to_db(user)
+            await save_user_to_db(user)
 
 
 async def dispatch_notifications(bot: Bot):

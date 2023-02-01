@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Dict
 
 from websockets import WebSocketClientProtocol
@@ -20,20 +21,26 @@ logger = logging.getLogger(__package__)
 
 
 BINANCE_SYMBOLS = {
+    Symbols.BTC: "btc",
+    Symbols.ETH: "eth",
+    Symbols.DOGE: "doge",
+    Symbols.SOL: "sol",
+    Symbols.ATOM: "atom",
+    Symbols.XRP: "xrp",
+    Symbols.APT: "apt",
+    Symbols.MAGIC: "magic",
+    Symbols.MINA: "mina",
+    Symbols.KAVA: "kava",
+    Symbols.NEAR: "near",
+
     Symbols.USDT: "usdt",
     Symbols.LUNA: "luna",
     Symbols.MIR: "mir",
-    Symbols.SOL: "sol",
     Symbols.SHIB: "shib",
     Symbols.AVAX: "avax",
-    Symbols.ATOM: "atom",
     Symbols.EOS: "eos",
-    Symbols.XRP: "xrp",
     Symbols.WAVES: "waves",
 
-    Symbols.DOGE: "doge",
-    Symbols.BTC: "btc",
-    Symbols.ETH: "eth",
     Symbols.EUR: "eur",
     Symbols.RUB: "rub",
 }
@@ -103,6 +110,7 @@ class BinanceTracker(BaseTracker):
 
         for dispatcher in self.dispatchers:
             await dispatcher.subscribe(self.connection)
+            await asyncio.sleep(0.5)
 
     async def _get_dispatcher_by_id(self, _id) -> BinanceDispatcher:
         for dispatcher in self.dispatchers:

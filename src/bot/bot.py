@@ -39,7 +39,7 @@ def _create_dispatcher(bot: Bot) -> Dispatcher:
 
     dispatcher.message_handler(commands=["notify"])(handle_create_price_limit_notification)
     dispatcher.message_handler(commands=["notifications"])(handle_list_notifications)
-    dispatcher.message_handler(commands=["remove_notification"])(handle_remove_notification)
+    dispatcher.message_handler(commands=["remove"])(handle_remove_notification)
     return dispatcher
 
 

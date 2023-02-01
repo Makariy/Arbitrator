@@ -7,13 +7,13 @@ from bot.services.utils import auth_required
 from bot.services.user.models import Directions, User
 from bot.services.notificaions.db_services import (
     create_price_limit_notification_for_user,
-    pop_notification_from_user_by_index,
+    remove_notification_for_user,
     get_user_notifications,
+    save_user_to_db,
     IncorrectNotificationIndexError
 )
 
 from config import NOTIFICATION_EXCHANGE
-
 
 logger = logging.getLogger(__package__)
 
@@ -66,20 +66,27 @@ async def handle_list_notifications(message: types.Message, user: User):
 
 @auth_required
 async def handle_remove_notification(message: types.Message, user: User):
-    message_args = message.get_args()
+    message_args = message.get_args().split()
     if not message_args:
         await message.reply(f"You need to specify notification index")
         return
 
     try:
-        notification_index = int(message_args[0]) - 1
-        notification = await pop_notification_from_user_by_index(user.telegram_id, notification_index)
+        notifications = await get_user_notifications(user.telegram_id)
+        notifications_to_remove = [notifications[i] for i in map(lambda a: int(a) - 1, message_args)]
+        for notification_to_remove in notifications_to_remove:
+            await remove_notification_for_user(user, notification_to_remove)
+
+        await save_user_to_db(user)
+
         return await message.reply(
-            f"Notification {await _render_notification(notification)} has been successfully removed"
+            "\n".join([
+                f"Notification {await _render_notification(notification)} has been successfully removed"
+                for notification in notifications_to_remove
+            ])
         )
 
     except ValueError:
         return await message.reply(f"Notification index must be a digit")
     except IncorrectNotificationIndexError:
         return await message.reply(f"There is no such notification")
-

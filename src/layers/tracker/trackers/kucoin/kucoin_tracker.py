@@ -24,20 +24,26 @@ database = Database()
 
 
 KuCoinSymbols = {
+    Symbols.SOL: "SOL",
+    Symbols.ATOM: "ATOM",
+    Symbols.BTC: "BTC",
+    Symbols.ETH: "ETH",
+    Symbols.DOGE: "DOGE",
+    Symbols.XRP: "XRP",
+    Symbols.APT: "APT",
+    Symbols.MAGIC: "MAGIC",
+    Symbols.MINA: "MINA",
+    Symbols.KAVA: "KAVA",
+    Symbols.NEAR: "NEAR",
+
     Symbols.USDT: "USDT",
     Symbols.LUNA: "LUNA",
-    Symbols.SOL: "SOL",
     Symbols.SHIB: "SHIB",
     Symbols.MIR: "MIR",
     Symbols.AVAX: "AVAX",
-    Symbols.ATOM: "ATOM",
     Symbols.EOS: "EOS",
-    Symbols.XRP: "XRP",
     Symbols.WAVES: "WAVES",
 
-    Symbols.DOGE: "DOGE",
-    Symbols.ETH: "ETH",
-    Symbols.BTC: "BTC",
     Symbols.EUR: "EUR",
     Symbols.RUB: "RUB",
 }
