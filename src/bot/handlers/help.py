@@ -10,6 +10,8 @@ HELP_TEXT = """
 
 /price <symbol> - get current <symbol> price
 /currencies - list tracking currencies
+/calc <enter> <stop> <risk> - calculate the margin percent for a deal 
+/calc <enter> <stop> <risk> <target> <balance> - like the /calc command, but prints the profit of the deal 
 
 /notify <symbol> <price> <direction> - receive a notification when <symbol>'s price goes above or below the <price>
 /notifications - list pending notifications 

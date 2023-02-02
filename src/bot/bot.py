@@ -15,6 +15,8 @@ from .handlers.notify_price import (
 from .handlers.get_price import handle_get_price
 from .handlers.list_currencies import handle_list_currencies
 
+from .handlers.calculator import handle_calculate
+
 from bot.services.notificaions.dispatcher.dispatcher import run_dispatcher
 import config
 
@@ -36,6 +38,8 @@ def _create_dispatcher(bot: Bot) -> Dispatcher:
 
     dispatcher.message_handler(commands=["price"])(handle_get_price)
     dispatcher.message_handler(commands=["currencies"])(handle_list_currencies)
+
+    dispatcher.message_handler(commands=["calc"])(handle_calculate)
 
     dispatcher.message_handler(commands=["notify"])(handle_create_price_limit_notification)
     dispatcher.message_handler(commands=["notifications"])(handle_list_notifications)
