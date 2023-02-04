@@ -22,7 +22,6 @@ def main(args):
         run_bot()
 
 
-
 if __name__ == "__main__":
     configure_logging()
 

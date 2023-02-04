@@ -1,8 +1,8 @@
 from typing import Coroutine, Callable, List, Any
 
-import aioredis
+import redis.asyncio as aioredis
+
 import asyncio
-import async_timeout
 from utils.decorators import singleton
 
 import config
@@ -15,10 +15,11 @@ async def try_wait(function: Coroutine, _timeout: float = 0.5):
     except asyncio.TimeoutError:
         return None
 
+
 @singleton
 class Database:
     def __init__(self):
-        self._redis = aioredis.from_url(config.REDIS_URL, decode_responses=True)
+        self._redis: aioredis.Redis = aioredis.from_url(config.REDIS_URL, decode_responses=True)
 
     async def get(self, key: str) -> str:
         return await self._redis.get(key)

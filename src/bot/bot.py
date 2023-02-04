@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import multiprocessing
 from aiogram import Bot, Dispatcher, executor
 
 from .handlers.best_chains import handle_best_chains
@@ -21,7 +22,7 @@ from bot.services.notificaions.dispatcher.dispatcher import run_dispatcher
 import config
 
 
-logger = logging.getLogger(__package__)
+logger = logging.getLogger(__name__)
 
 
 def create_bot() -> Bot:
@@ -47,13 +48,24 @@ def _create_dispatcher(bot: Bot) -> Dispatcher:
     return dispatcher
 
 
-def _run_bot(bot: Bot):
-    dispatcher = _create_dispatcher(bot)
-    dispatcher.loop.create_task(run_dispatcher(bot))
-    executor.start_polling(dispatcher, skip_updates=True)
+def _run_dispatcher(bot: Bot):
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(run_dispatcher(bot))
+
+
+def start_dispatcher_thread():
+    bot = create_bot()
+    process = multiprocessing.Process(target=_run_dispatcher, args=(bot,))
+    process.start()
 
 
 def run_bot():
+    start_dispatcher_thread()
+
     bot = create_bot()
+    dispatcher = _create_dispatcher(bot)
     logger.info(f"Starting the bot")
-    _run_bot(bot)
+    executor.start_polling(
+        dispatcher,
+        skip_updates=True
+    )

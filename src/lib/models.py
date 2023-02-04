@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from lib.symbol import Symbol
 from lib.platform import Platform
 
+from config import DEBUG
+
 
 class Token(BaseModel):
     price: float
@@ -17,6 +19,9 @@ class Token(BaseModel):
     def is_the_same(self, other) -> bool:
         return self.can_convert_to(other) and self.platform == other.platform
 
+    class Config:
+        validation = DEBUG
+
 
 class TokenExchange(BaseModel):
     input: Token
@@ -26,6 +31,12 @@ class TokenExchange(BaseModel):
     commission: float = 0
     timestamp: float
 
+    class Config:
+        validation = DEBUG
+
 
 class TokenExchanges(BaseModel):
     token_exchanges: List[TokenExchange]
+
+    class Config:
+        validation = DEBUG

@@ -10,11 +10,16 @@ from lib.models import TokenExchanges
 database = Database()
 
 
-async def get_token_exchanges(exchange: Platform, input: Symbol, output: Symbol) -> Optional[TokenExchanges]:
+async def get_token_exchanges(
+        exchange: Platform,
+        input: Symbol,
+        output: Symbol
+) -> Optional[TokenExchanges]:
     key = await create_key_for_current_exchange(exchange, input, output)
     raw_token_exchanges = await database.get(key)
     if raw_token_exchanges is None:
         return None
+
     return TokenExchanges(**json.loads(raw_token_exchanges))
 
 

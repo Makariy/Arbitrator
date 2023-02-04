@@ -6,7 +6,9 @@ from lib.symbol import Symbol
 from lib.platform import Platform
 from lib.exchange import Exchange
 
+
 LOG_LEVEL = logging.INFO
+DEBUG = True
 
 
 INPUT_TOKEN = Symbol.USDT
