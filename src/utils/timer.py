@@ -1,5 +1,9 @@
 import asyncio
 import time
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class Timer:
@@ -15,4 +19,5 @@ class Timer:
         to_sleep = self.period - (now - self.start_time)
 
         if to_sleep > 0:
+            logger.info(f"Sleeping for {to_sleep}")
             await asyncio.sleep(to_sleep)

@@ -16,14 +16,14 @@ class NotificationType(Enum):
 
 class NotificationBase(BaseModel):
     type: NotificationType
+    input: Symbols
+    output: Symbols
+    exchange: Exchanges
 
 
 class PriceLimitNotification(NotificationBase):
     type = NotificationType.price_limit
     limit: float
-    input: Symbols
-    output: Symbols
-    exchange: Exchanges
     direction: Directions
 
 

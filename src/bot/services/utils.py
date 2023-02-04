@@ -1,4 +1,4 @@
-from typing import Optional, Awaitable, Callable, Coroutine, Any
+from typing import Optional, Callable, Coroutine
 
 from aiogram import types
 
