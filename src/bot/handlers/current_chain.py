@@ -1,7 +1,7 @@
 import logging
 from aiogram import types
 
-from lib.symbols import Symbols
+from lib.symbol import Symbol
 
 from layers.analyzer.chain_services import get_current_chain
 from layers.analyzer.logger import format_chain
@@ -16,12 +16,13 @@ async def handle_current_chain(message: types.Message):
         await message.reply("You need to specify: {symbol} {symbol} {symbol} ...")
         return
 
-    symbols = [Symbols.get_symbol_by_value(arg) for arg in args]
-
-    if None in [symbols]:
-        bad_symbol_index = symbols.index(None)
-        await message.reply(f"No such symbol: {args[bad_symbol_index]}")
-        return
+    symbols = []
+    for symbol_name in args:
+        try:
+            symbols.append(Symbol(symbol_name))
+        except ValueError:
+            await message.reply(f"No such symbol: {symbol_name}")
+            return
 
     chain = await get_current_chain(symbols)
     if chain is None:

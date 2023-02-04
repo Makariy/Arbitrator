@@ -23,7 +23,7 @@ async def _reverse_token_exchange(token_exchange: TokenExchange) -> TokenExchang
         input=token_exchange.output,
         output=token_exchange.input,
         count=1 / token_exchange.count,
-        exchange=token_exchange.exchange,
+        platform=token_exchange.platform,
         timestamp=token_exchange.timestamp,
         commission=token_exchange.commission
     )
@@ -38,12 +38,12 @@ async def _reverse_token_exchanges(token_exchanges: TokenExchanges) -> TokenExch
 async def get_all_token_exchanges() -> List[TokenExchanges]:
     """Gets the current value of all the token exchanges"""
     token_exchanges_keys = list(
-        map(lambda to_track: (to_track.exchange, to_track.input, to_track.output), config.TO_TRACK)
+        map(lambda to_track: (to_track.platform, to_track.input, to_track.output), config.TRACKING_EXCHANGES)
     )
     token_exchanges = await bulk_get_token_exchanges(token_exchanges_keys)
 
     valid_token_exchanges = []
-    for token_exchange, to_track in zip(token_exchanges, config.TO_TRACK):
+    for token_exchange, to_track in zip(token_exchanges, config.TRACKING_EXCHANGES):
         if token_exchanges is None:
             continue
 

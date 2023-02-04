@@ -8,8 +8,9 @@ from layers.tracker.trackers.base import BaseTracker, BaseDispatcher
 from layers.tracker.services.websocket_services import recv_json, send_json
 from lib.models import TokenExchanges, TokenExchange, Token
 
-from lib.symbols import Symbols
-from lib.exchanges import Exchanges, ToTrack
+from lib.symbol import Symbol
+from lib.platform import Platform
+from lib.exchange import Exchange
 from lib.database import Database
 from .kucoin_authorizer import KuCoinAuthorizer
 from .kucoin_pinger import KuCoinPinger
@@ -24,43 +25,43 @@ database = Database()
 
 
 KuCoinSymbols = {
-    Symbols.SOL: "SOL",
-    Symbols.ATOM: "ATOM",
-    Symbols.BTC: "BTC",
-    Symbols.ETH: "ETH",
-    Symbols.DOGE: "DOGE",
-    Symbols.XRP: "XRP",
-    Symbols.APT: "APT",
-    Symbols.MAGIC: "MAGIC",
-    Symbols.MINA: "MINA",
-    Symbols.KAVA: "KAVA",
-    Symbols.NEAR: "NEAR",
+    Symbol.SOL: "SOL",
+    Symbol.ATOM: "ATOM",
+    Symbol.BTC: "BTC",
+    Symbol.ETH: "ETH",
+    Symbol.DOGE: "DOGE",
+    Symbol.XRP: "XRP",
+    Symbol.APT: "APT",
+    Symbol.MAGIC: "MAGIC",
+    Symbol.MINA: "MINA",
+    Symbol.KAVA: "KAVA",
+    Symbol.NEAR: "NEAR",
 
-    Symbols.USDT: "USDT",
-    Symbols.LUNA: "LUNA",
-    Symbols.SHIB: "SHIB",
-    Symbols.MIR: "MIR",
-    Symbols.AVAX: "AVAX",
-    Symbols.EOS: "EOS",
-    Symbols.WAVES: "WAVES",
+    Symbol.USDT: "USDT",
+    Symbol.LUNA: "LUNA",
+    Symbol.SHIB: "SHIB",
+    Symbol.MIR: "MIR",
+    Symbol.AVAX: "AVAX",
+    Symbol.EOS: "EOS",
+    Symbol.WAVES: "WAVES",
 
-    Symbols.EUR: "EUR",
-    Symbols.RUB: "RUB",
+    Symbol.EUR: "EUR",
+    Symbol.RUB: "RUB",
 }
 
 
 class KuCoinDispatcher(BaseDispatcher):
-    EXCHANGE = Exchanges.kucoin
+    PLATFORM = Platform.kucoin
     connection_id: str
 
     async def _convert_bid_to_token_exchanges(self, bid: KuCoinBidResponseData) -> TokenExchanges:
         token_exchanges = []
         for ask in bid.asks:
             token_exchange = TokenExchange(
-                input=Token(price=1, symbol=self.input, exchange=self.EXCHANGE),
-                output=Token(price=ask.price, symbol=self.output, exchange=self.EXCHANGE),
+                input=Token(price=1, symbol=self.input, platform=self.PLATFORM),
+                output=Token(price=ask.price, symbol=self.output, platform=self.PLATFORM),
                 count=ask.count,
-                exchange=self.EXCHANGE,
+                platform=self.PLATFORM,
                 timestamp=bid.timestamp / 1000
             )
             token_exchanges.append(token_exchange)
@@ -91,7 +92,7 @@ class KuCoinDispatcher(BaseDispatcher):
 
 
 class KuCoinTracker(BaseTracker):
-    EXCHANGE = Exchanges.kucoin
+    PLATFORM = Platform.kucoin
 
     authorizer = KuCoinAuthorizer()
     pinger: KuCoinPinger
@@ -122,9 +123,9 @@ class KuCoinTracker(BaseTracker):
         logger.error(f"Got an unknown response from server: {message}")
         raise UnknownResponseException(message)
 
-    async def init(self, to_track_list: List[ToTrack]):
-        for to_track in to_track_list:
-            dispatcher = KuCoinDispatcher(input=to_track.input, output=to_track.output)
+    async def init(self, exchanges_to_track: List[Exchange]):
+        for exchange in exchanges_to_track:
+            dispatcher = KuCoinDispatcher(input=exchange.input, output=exchange.output)
             await dispatcher.init()
             self.dispatchers.append(dispatcher)
 

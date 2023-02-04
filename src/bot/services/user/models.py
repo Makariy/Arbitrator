@@ -1,8 +1,8 @@
 from typing import List, Union
 from enum import Enum
 from pydantic import BaseModel
-from lib.symbols import Symbols
-from lib.exchanges import Exchanges
+from lib.symbol import Symbol
+from lib.platform import Platform
 
 
 class Directions(Enum):
@@ -16,9 +16,9 @@ class NotificationType(Enum):
 
 class NotificationBase(BaseModel):
     type: NotificationType
-    input: Symbols
-    output: Symbols
-    exchange: Exchanges
+    input: Symbol
+    output: Symbol
+    exchange: Platform
 
 
 class PriceLimitNotification(NotificationBase):

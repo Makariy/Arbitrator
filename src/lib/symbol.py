@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 
 
-class Symbols(Enum):
+class Symbol(Enum):
     USDT = "USDT"
 
     AVAX = "AVAX"
@@ -27,15 +27,8 @@ class Symbols(Enum):
     EUR = "EUR"
     RUB = "RUB"
 
-    @staticmethod
-    def get_symbol_by_value(value: str):
-        for item in list(Symbols):
-            if item.value == value:
-                return item
-
-        return None
 
 
-async def join_symbols(symbols: List[Symbols]) -> str:
+async def join_symbols(symbols: List[Symbol]) -> str:
     return "-".join(map(lambda a: a.value, symbols))
 

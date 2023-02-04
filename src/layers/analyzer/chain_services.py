@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from lib.database import Database
-from lib.symbols import Symbols
+from lib.symbol import Symbol
 from lib.database.key_manager import create_key_for_best_chain, \
     create_key_for_current_chain, \
     BEST_CHAIN_KEY, \
@@ -12,7 +12,7 @@ from .chain import ExchangeChain
 database = Database()
 
 
-async def get_current_chain(symbols: List[Symbols]) -> Optional[ExchangeChain]:
+async def get_current_chain(symbols: List[Symbol]) -> Optional[ExchangeChain]:
     raw_chain = await database.get(await create_key_for_current_chain(symbols))
     if raw_chain is None:
         return None
@@ -34,7 +34,7 @@ async def get_all_chains() -> List[ExchangeChain]:
     return chains
 
 
-async def get_best_chain(symbols: List[Symbols]) -> Optional[ExchangeChain]:
+async def get_best_chain(symbols: List[Symbol]) -> Optional[ExchangeChain]:
     key = await create_key_for_best_chain(symbols)
     raw_best_chain = await database.get(key)
     if raw_best_chain is not None:

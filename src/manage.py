@@ -13,7 +13,7 @@ import config
 def main(args):
     args, extra = args
     if args.command == "track":
-        run_trackers(config.TO_TRACK)
+        run_trackers(config.TRACKING_EXCHANGES)
     if args.command == "analyze":
         run_analyzer()
     if args.command == "acquirer":

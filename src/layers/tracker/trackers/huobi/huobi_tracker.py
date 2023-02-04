@@ -3,8 +3,9 @@ import logging
 import gzip
 from websockets import WebSocketClientProtocol
 
-from lib.symbols import Symbols
-from lib.exchanges import Exchanges, ToTrack
+from lib.symbol import Symbol
+from lib.platform import Platform
+from lib.exchange import Exchange
 from lib.models import TokenExchanges, TokenExchange, Token
 from layers.tracker.services.websocket_services import create_connection, recv_json, send_json
 
@@ -19,44 +20,44 @@ logger = logging.getLogger(__package__)
 
 
 HUOBI_SYMBOLS = {
-    Symbols.USDT: "usdt",
+    Symbol.USDT: "usdt",
 
-    Symbols.APT: "apt",
-    Symbols.MAGIC: "magic",
-    Symbols.MINA: "mina",
-    Symbols.KAVA: "kava",
-    Symbols.NEAR: "near",
+    Symbol.APT: "apt",
+    Symbol.MAGIC: "magic",
+    Symbol.MINA: "mina",
+    Symbol.KAVA: "kava",
+    Symbol.NEAR: "near",
 
-    Symbols.LUNA: "luna",
-    Symbols.MIR: "mir",
-    Symbols.SOL: "sol",
-    Symbols.SHIB: "shib",
-    Symbols.AVAX: "avax",
-    Symbols.ATOM: "atom",
-    Symbols.EOS: "eos",
-    Symbols.XRP: "xrp",
-    Symbols.WAVES: "waves",
+    Symbol.LUNA: "luna",
+    Symbol.MIR: "mir",
+    Symbol.SOL: "sol",
+    Symbol.SHIB: "shib",
+    Symbol.AVAX: "avax",
+    Symbol.ATOM: "atom",
+    Symbol.EOS: "eos",
+    Symbol.XRP: "xrp",
+    Symbol.WAVES: "waves",
 
-    Symbols.DOGE: "doge",
-    Symbols.BTC: "btc",
-    Symbols.ETH: "eth",
-    Symbols.EUR: "eur",
-    Symbols.RUB: "rub",
+    Symbol.DOGE: "doge",
+    Symbol.BTC: "btc",
+    Symbol.ETH: "eth",
+    Symbol.EUR: "eur",
+    Symbol.RUB: "rub",
 }
 
 
 class HuobiDispatcher(BaseDispatcher):
-    EXCHANGE = Exchanges.huobi
+    PLATFORM = Platform.huobi
     ack: HuobiAcknowledgment = None
 
     async def _convert_huobi_response_to_token_exchanges(self, response: HuobiMarketDepthResponse) -> TokenExchanges:
         token_exchanges = []
         for bid in response.tick.bids:
             token_exchange = TokenExchange(
-                input=Token(price=1, symbol=self.input, exchange=self.EXCHANGE),
-                output=Token(price=bid.price, symbol=self.output, exchange=self.EXCHANGE),
+                input=Token(price=1, symbol=self.input, platform=self.PLATFORM),
+                output=Token(price=bid.price, symbol=self.output, platform=self.PLATFORM),
                 count=bid.count,
-                exchange=self.EXCHANGE,
+                platform=self.PLATFORM,
                 timestamp=response.timestamp / 1000
             )
             token_exchanges.append(token_exchange)
@@ -86,7 +87,7 @@ class HuobiDispatcher(BaseDispatcher):
 
 
 class HuobiTracker(BaseTracker):
-    EXCHANGE = Exchanges.huobi
+    PLATFORM = Platform.huobi
 
     async def _recv_data(self):
         return await recv_json(self.connection, decompress_function=gzip.decompress)
@@ -101,9 +102,9 @@ class HuobiTracker(BaseTracker):
 
         raise NoSuchDispatcherException("There is no such dispatcher for the received channel")
 
-    async def init(self, to_track_list: List[ToTrack]):
-        for to_track in to_track_list:
-            self.dispatchers.append(HuobiDispatcher(to_track.input, to_track.output))
+    async def init(self, exchanges_to_track: List[Exchange]):
+        for exchange in exchanges_to_track:
+            self.dispatchers.append(HuobiDispatcher(exchange.input, exchange.output))
 
     async def connect(self):
         self.connection = await create_connection(config.HUOBI_BASE_WEBSOCKETS_URL)
@@ -131,7 +132,7 @@ class HuobiTracker(BaseTracker):
         raise UnknownResponseException(f"Received an unknown message from server: {message}")
 
     async def start_tracking(self):
-        logger.info(f"Starting tracking on {self.EXCHANGE}")
+        logger.info(f"Starting tracking on {self.PLATFORM}")
         while True:
             message = await self._recv_data()
             await self._dispatch_message(message)

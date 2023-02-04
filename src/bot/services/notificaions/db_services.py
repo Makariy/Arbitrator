@@ -1,6 +1,6 @@
 from typing import List
-from lib.exchanges import Exchanges
-from lib.symbols import Symbols
+from lib.platform import Platform
+from lib.symbol import Symbol
 
 from bot.services.user.models import Directions, PriceLimitNotification, NOTIFICATION_TYPES
 from bot.services.user.db_services import (
@@ -21,9 +21,9 @@ class IncorrectNotificationIndexError(Exception):
 
 async def create_price_limit_notification_for_user(
         telegram_id: int,
-        exchange: Exchanges,
-        intput_symbol: Symbols,
-        output_symbol: Symbols,
+        exchange: Platform,
+        intput_symbol: Symbol,
+        output_symbol: Symbol,
         limit: float,
         direction: Directions
 ):

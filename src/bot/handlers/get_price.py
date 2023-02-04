@@ -1,23 +1,23 @@
 from typing import List
 from aiogram import types
 
-from lib.symbols import Symbols
+from lib.symbol import Symbol
 from bot.services.utils import get_current_price
 
 from config import NOTIFICATION_EXCHANGE
 
 
-async def _get_symbols_by_name(raw_symbols: List[str]) -> List[Symbols]:
+async def _get_symbols_by_name(raw_symbols: List[str]) -> List[Symbol]:
     symbols = []
     for raw_symbol in raw_symbols:
-        symbol = Symbols.get_symbol_by_value(raw_symbol)
-        if symbol is None:
+        try:
+            symbols.append(Symbol(raw_symbol))
+        except ValueError:
             raise ValueError(f"Symbol: '{raw_symbol}' does not exist")
-        symbols.append(symbol)
     return symbols
 
 
-async def format_price_for_symbol(price: float, symbol: Symbols):
+async def format_price_for_symbol(price: float, symbol: Symbol):
     return f"{symbol.value} - {price if price is not None else 'not found'}"
 
 
@@ -32,7 +32,7 @@ async def handle_get_price(message: types.Message):
 
     formatted_prices = "\n".join([
         await format_price_for_symbol(
-            price=await get_current_price(NOTIFICATION_EXCHANGE, input=symbol, output=Symbols.USDT),
+            price=await get_current_price(NOTIFICATION_EXCHANGE, input=symbol, output=Symbol.USDT),
             symbol=symbol
         ) for symbol in symbols
     ])

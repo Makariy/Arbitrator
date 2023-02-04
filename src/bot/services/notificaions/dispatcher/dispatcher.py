@@ -49,7 +49,7 @@ async def dispatch_notifications(bot: Bot, cache_manager: DispatcherCacheManager
 
 
 async def run_dispatcher(bot: Bot):
-    cache_manager = DispatcherCacheManager(config.TO_TRACK)
+    cache_manager = DispatcherCacheManager(config.TRACKING_EXCHANGES)
 
     timer = Timer(NOTIFICATION_CHECK_PERIOD)
     while True:

@@ -4,7 +4,8 @@ import asyncio
 from websockets.exceptions import WebSocketException
 
 from lib.database import Database
-from lib.exchanges import ToTrack, Exchanges
+from lib.platform import Platform
+from lib.exchange import Exchange
 from layers.tracker.trackers.base import BaseTracker
 
 
@@ -24,27 +25,27 @@ def get_all_trackers() -> List[BaseTracker.__class__]:
     ]
 
 
-async def get_tracker_by_exchange(exchange: Exchanges) -> BaseTracker.__class__:
+async def get_tracker_by_platform(platform: Platform) -> BaseTracker.__class__:
     for tracker in get_all_trackers():
-        if tracker.EXCHANGE == exchange:
+        if tracker.PLATFORM == platform:
             return tracker
 
-    raise ValueError(f"No such tracker for {exchange}")
+    raise ValueError(f"No such tracker for {platform}")
 
 
-async def create_tracker_for_exchange(exchange: Exchanges, to_track_list: List[ToTrack]) -> BaseTracker:
-    exchanges_to_track_list = list(filter(lambda a: a.exchange == exchange, to_track_list))
-    tracker_cls = await get_tracker_by_exchange(exchange)
+async def create_tracker_for_platform(platform: Platform, exchanges: List[Exchange]) -> BaseTracker:
+    exchanges_to_track_list = list(filter(lambda a: a.platform == platform, exchanges))
+    tracker_cls = await get_tracker_by_platform(platform)
     tracker = tracker_cls()
     await tracker.init(exchanges_to_track_list)
     return tracker
 
 
-async def create_trackers(to_track_list: List[ToTrack]) -> List[BaseTracker]:
-    exchanges = set(map(lambda a: a.exchange, to_track_list))
+async def create_trackers_for_exchanges(exchanges: List[Exchange]) -> List[BaseTracker]:
+    platforms = set(map(lambda a: a.platform, exchanges))
     trackers = []
-    for exchange in exchanges:
-        trackers.append(await create_tracker_for_exchange(exchange, to_track_list))
+    for platform in platforms:
+        trackers.append(await create_tracker_for_platform(platform, exchanges))
     return trackers
 
 
@@ -55,11 +56,11 @@ async def start_tracker(tracker: BaseTracker):
             await tracker.connect()
             await tracker.start_tracking()
         except (ConnectionError, WebSocketException) as error:
-            logger.warning(f"Connection error occurred on tracker '{tracker.EXCHANGE}': {error}")
+            logger.warning(f"Connection error occurred on tracker '{tracker.PLATFORM}': {error}")
 
 
-async def _run_trackers(to_track_list: List[ToTrack]):
-    trackers = await create_trackers(to_track_list)
+async def _run_trackers(tracking_exchanges: List[Exchange]):
+    trackers = await create_trackers_for_exchanges(tracking_exchanges)
     tasks = []
     for tracker in trackers:
         tasks.append(asyncio.create_task(start_tracker(tracker)))
@@ -72,13 +73,13 @@ def _run_multiprocessing_tracker(tracker: BaseTracker):
     logger.error(f"Running tracker {tracker} stopped")
 
 
-def _run_multiprocessing_trackers(to_track_list: List[ToTrack]):
+def _run_multiprocessing_trackers(exchanges_to_track: List[Exchange]):
     from multiprocessing import Pool
     pool = Pool()
-    trackers = asyncio.run(create_trackers(to_track_list))
+    trackers = asyncio.run(create_trackers_for_exchanges(exchanges_to_track))
     pool.map(_run_multiprocessing_tracker, trackers)
 
 
-def run_trackers(to_track_list: List[ToTrack]):
-    asyncio.run(_run_trackers(to_track_list))
+def run_trackers(exchanges_to_track: List[Exchange]):
+    asyncio.run(_run_trackers(exchanges_to_track))
     # _run_multiprocessing_trackers(to_track_list)

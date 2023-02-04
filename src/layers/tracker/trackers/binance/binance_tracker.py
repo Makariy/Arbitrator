@@ -3,8 +3,9 @@ from typing import List, Dict
 
 from websockets import WebSocketClientProtocol
 
-from lib.symbols import Symbols
-from lib.exchanges import Exchanges, ToTrack
+from lib.symbol import Symbol
+from lib.platform import Platform
+from lib.exchange import Exchange
 from lib.models import TokenExchanges, TokenExchange, Token
 from layers.tracker.services.websocket_services import create_connection, send_json, recv_json
 
@@ -21,34 +22,34 @@ logger = logging.getLogger(__package__)
 
 
 BINANCE_SYMBOLS = {
-    Symbols.BTC: "btc",
-    Symbols.ETH: "eth",
-    Symbols.DOGE: "doge",
-    Symbols.SOL: "sol",
-    Symbols.ATOM: "atom",
-    Symbols.XRP: "xrp",
-    Symbols.APT: "apt",
-    Symbols.MAGIC: "magic",
-    Symbols.MINA: "mina",
-    Symbols.KAVA: "kava",
-    Symbols.NEAR: "near",
+    Symbol.BTC: "btc",
+    Symbol.ETH: "eth",
+    Symbol.DOGE: "doge",
+    Symbol.SOL: "sol",
+    Symbol.ATOM: "atom",
+    Symbol.XRP: "xrp",
+    Symbol.APT: "apt",
+    Symbol.MAGIC: "magic",
+    Symbol.MINA: "mina",
+    Symbol.KAVA: "kava",
+    Symbol.NEAR: "near",
 
-    Symbols.USDT: "usdt",
-    Symbols.LUNA: "luna",
-    Symbols.MIR: "mir",
-    Symbols.SHIB: "shib",
-    Symbols.AVAX: "avax",
-    Symbols.EOS: "eos",
-    Symbols.WAVES: "waves",
+    Symbol.USDT: "usdt",
+    Symbol.LUNA: "luna",
+    Symbol.MIR: "mir",
+    Symbol.SHIB: "shib",
+    Symbol.AVAX: "avax",
+    Symbol.EOS: "eos",
+    Symbol.WAVES: "waves",
 
-    Symbols.EUR: "eur",
-    Symbols.RUB: "rub",
+    Symbol.EUR: "eur",
+    Symbol.RUB: "rub",
 }
 
 
 class BinanceDispatcher(BaseDispatcher):
     ID: int
-    EXCHANGE = Exchanges.binance
+    PLATFORM = Platform.binance
 
     async def init(self, _id: int):
         self.ID = _id
@@ -74,10 +75,10 @@ class BinanceDispatcher(BaseDispatcher):
         token_exchanges = []
         for bid in filter(lambda a: not a.count <= 0, response.bids):
             token_exchange = TokenExchange(
-                input=Token(price=1, symbol=self.input, exchange=self.EXCHANGE),
-                output=Token(price=bid.price, symbol=self.output, exchange=self.EXCHANGE),
+                input=Token(price=1, symbol=self.input, platform=self.PLATFORM),
+                output=Token(price=bid.price, symbol=self.output, platform=self.PLATFORM),
                 count=bid.count,
-                exchange=self.EXCHANGE,
+                platform=self.PLATFORM,
                 timestamp=response.event_time / 1000
             )
             token_exchanges.append(token_exchange)
@@ -95,14 +96,13 @@ class BinanceDispatcher(BaseDispatcher):
 
 
 class BinanceTracker(BaseTracker):
-    EXCHANGE = Exchanges.binance
+    PLATFORM = Platform.binance
     dispatchers: List[BinanceDispatcher] = []
 
-    async def init(self, to_track_list: List[ToTrack]):
-        for i in range(len(to_track_list)):
-            to_track = to_track_list[i]
-            dispatcher = BinanceDispatcher(to_track.input, to_track.output)
-            await dispatcher.init(_id=i)
+    async def init(self, exchanges_to_track: List[Exchange]):
+        for index, exchange in enumerate(exchanges_to_track):
+            dispatcher = BinanceDispatcher(exchange.input, exchange.output)
+            await dispatcher.init(_id=index)
             self.dispatchers.append(dispatcher)
 
     async def connect(self):
@@ -143,7 +143,7 @@ class BinanceTracker(BaseTracker):
         await dispatcher.handle_message(message)
 
     async def start_tracking(self):
-        logger.info(f"Starting tracking on {self.EXCHANGE}")
+        logger.info(f"Starting tracking on {self.PLATFORM}")
 
         while True:
             message = await recv_json(self.connection)

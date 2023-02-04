@@ -6,25 +6,25 @@ from lib.models import TokenExchanges
 from lib.database import Database
 from lib.database.key_manager import create_key_for_current_exchange
 
-from lib.symbols import Symbols
-from lib.exchanges import Exchanges, ToTrack
-
+from lib.symbol import Symbol
+from lib.platform import Platform
+from lib.exchange import Exchange
 
 database = Database()
 
 
 class BaseDispatcher(ABC):
-    EXCHANGE: Exchanges
-    input: Symbols
-    output: Symbols
+    PLATFORM: Platform
+    input: Symbol
+    output: Symbol
     channel: str
 
-    def __init__(self, input: Symbols, output: Symbols):
+    def __init__(self, input: Symbol, output: Symbol):
         self.input = input
         self.output = output
 
     async def save_token_exchanges_to_database(self, token_exchanges: TokenExchanges):
-        key = await create_key_for_current_exchange(self.EXCHANGE, self.input, self.output)
+        key = await create_key_for_current_exchange(self.PLATFORM, self.input, self.output)
         await database.set(key, token_exchanges.json())
 
     async def init(self, *args, **kwargs):
@@ -40,7 +40,7 @@ class BaseDispatcher(ABC):
 
 
 class BaseTracker(ABC):
-    EXCHANGE: Exchanges
+    PLATFORM: Platform
     connection: WebSocketClientProtocol = None
     dispatchers: List[BaseDispatcher]
 
@@ -48,7 +48,7 @@ class BaseTracker(ABC):
         self.dispatchers = []
 
     @abstractmethod
-    async def init(self, to_track_list: List[ToTrack]):
+    async def init(self, to_track_list: List[Exchange]):
         pass
 
     @abstractmethod

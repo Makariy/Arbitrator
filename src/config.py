@@ -2,18 +2,18 @@ import os
 import sys
 import logging
 
-from lib.symbols import Symbols
-from lib.exchanges import Exchanges, ToTrack
-
+from lib.symbol import Symbol
+from lib.platform import Platform
+from lib.exchange import Exchange
 
 LOG_LEVEL = logging.INFO
 
 
-INPUT_TOKEN = Symbols.USDT
+INPUT_TOKEN = Symbol.USDT
 ANALYZE_PERIOD = 1  # In seconds
-MINIMAL_PROFIT_PERCENT = 0.06
+MINIMAL_PROFIT_PERCENT = -1
 
-NOTIFICATION_EXCHANGE = Exchanges.huobi
+NOTIFICATION_EXCHANGE = Platform.huobi
 NOTIFICATION_CHECK_PERIOD = 1  # In Seconds
 
 
@@ -65,66 +65,66 @@ LOGGING = {
 
 MAX_EXCHANGE_DEPTH = 2
 
-TO_TRACK = [
+TRACKING_EXCHANGES = [
     # KuCoin
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.MIR, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.LUNA, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.SHIB, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.WAVES, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.SHIB, output=Symbols.DOGE),
+    # Exchange(platform=Platform.kucoin, input=Symbol.MIR, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.LUNA, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.SHIB, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.WAVES, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.SHIB, output=Symbol.DOGE),
     #
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.BTC, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.ETH, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.DOGE, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.SOL, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.AVAX, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.ATOM, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.XRP, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.APT, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.MAGIC, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.MINA, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.KAVA, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.kucoin, input=Symbols.NEAR, output=Symbols.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.BTC, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.ETH, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.DOGE, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.SOL, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.AVAX, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.ATOM, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.XRP, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.APT, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.MAGIC, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.MINA, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.KAVA, output=Symbol.USDT),
+    # Exchange(platform=Platform.kucoin, input=Symbol.NEAR, output=Symbol.USDT),
 
     # Huobi
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.MIR, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.LUNA, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.SHIB, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.EOS, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.huobi, input=Symbols.WAVES, output=Symbols.USDT),
+    # Exchange(platform=Platform.huobi, input=Symbol.MIR, output=Symbol.USDT),
+    # Exchange(platform=Platform.huobi, input=Symbol.LUNA, output=Symbol.USDT),
+    # Exchange(platform=Platform.huobi, input=Symbol.SHIB, output=Symbol.USDT),
+    # Exchange(platform=Platform.huobi, input=Symbol.EOS, output=Symbol.USDT),
+    # Exchange(platform=Platform.huobi, input=Symbol.WAVES, output=Symbol.USDT),
     # 
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.BTC, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.ETH, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.DOGE, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.SOL, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.AVAX, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.ATOM, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.XRP, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.APT, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.MAGIC, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.MINA, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.KAVA, output=Symbols.USDT),
-    ToTrack(exchange=Exchanges.huobi, input=Symbols.NEAR, output=Symbols.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.BTC, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.ETH, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.DOGE, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.SOL, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.AVAX, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.ATOM, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.XRP, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.APT, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.MAGIC, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.MINA, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.KAVA, output=Symbol.USDT),
+    Exchange(platform=Platform.huobi, input=Symbol.NEAR, output=Symbol.USDT),
 
 
     # Binance
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.MIR, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.LUNA, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.SHIB, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.EOS, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.WAVES, output=Symbols.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.MIR, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.LUNA, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.SHIB, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.EOS, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.WAVES, output=Symbol.USDT),
     #
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.BTC, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.ETH, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.DOGE, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.SOL, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.AVAX, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.ATOM, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.XRP, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.APT, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.MAGIC, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.MINA, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.KAVA, output=Symbols.USDT),
-    # ToTrack(exchange=Exchanges.binance, input=Symbols.NEAR, output=Symbols.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.BTC, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.ETH, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.DOGE, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.SOL, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.AVAX, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.ATOM, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.XRP, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.APT, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.MAGIC, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.MINA, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.KAVA, output=Symbol.USDT),
+    # Exchange(platform=Platform.binance, input=Symbol.NEAR, output=Symbol.USDT),
 ]
 

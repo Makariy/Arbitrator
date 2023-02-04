@@ -2,10 +2,10 @@ from typing import List, Optional, Dict
 
 from dataclasses import dataclass
 
-from lib.exchanges import ToTrack
+from lib.exchange import Exchange
 
-from lib.symbols import Symbols
-from lib.exchanges import Exchanges
+from lib.symbol import Symbol
+from lib.platform import Platform
 
 from bot.services.utils import get_current_price
 
@@ -18,15 +18,15 @@ class ExchangeStats:
 class DispatcherCacheManager:
     _exchange_stats: Dict[str, ExchangeStats] = {}
 
-    def __init__(self, tracking_exchanges: List[ToTrack]):
+    def __init__(self, tracking_exchanges: List[Exchange]):
         self.tracking_exchanges = tracking_exchanges
 
-    async def _create_key_for_to_track_item(self, to_track: ToTrack) -> str:
-        return f"{to_track.exchange.name}_{to_track.input.name}-{to_track.output.name}"
+    async def _create_key_for_to_track_item(self, to_track: Exchange) -> str:
+        return f"{to_track.platform.name}_{to_track.input.name}-{to_track.output.name}"
 
-    async def _update_to_track_item_cache(self, to_track: ToTrack):
+    async def _update_to_track_item_cache(self, to_track: Exchange):
         price = await get_current_price(
-            exchange=to_track.exchange,
+            exchange=to_track.platform,
             input=to_track.input,
             output=to_track.output
         )
@@ -40,12 +40,12 @@ class DispatcherCacheManager:
 
     async def get_stats_for_token_exchange(
             self,
-            input: Symbols,
-            output: Symbols,
-            exchange: Exchanges
+            input: Symbol,
+            output: Symbol,
+            exchange: Platform
     ) -> Optional[ExchangeStats]:
         stats = self._exchange_stats.get(
-            await self._create_key_for_to_track_item(ToTrack(exchange=exchange, input=input, output=output))
+            await self._create_key_for_to_track_item(Exchange(platform=exchange, input=input, output=output))
         )
         if not stats:
             ...

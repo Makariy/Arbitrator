@@ -3,7 +3,7 @@ from typing import List
 import asyncio
 from asyncio import Lock
 
-from lib.symbols import Symbols, join_symbols
+from lib.symbol import Symbol, join_symbols
 from lib.database.key_manager import create_key_for_profit_chain_pubsub
 
 from .receiver import subscribe
@@ -14,18 +14,18 @@ from layers.analyzer.chain_services import get_current_chain
 
 
 class Acquirer:
-    symbols: List[Symbols]
+    symbols: List[Symbol]
     lock: Lock
 
     async def _track_chain(self, chain: ExchangeChain):
-        print("Going to track the exchange for symbols: ",
+        print("Going to track the platform for symbols: ",
               await join_symbols(self.symbols),
               " current profit: ",
               chain.get_profit_percent(), "%")
         for i in range(20):
             chain = await get_current_chain(self.symbols)
             if chain is None:
-                print("No current exchange for chain: ", self.symbols)
+                print("No current platform for chain: ", self.symbols)
                 continue
             print("Current profit: ", chain.get_profit_percent(), "%")
             await asyncio.sleep(0.5)
@@ -39,7 +39,7 @@ class Acquirer:
             chain = ExchangeChain.parse_raw(data)
             await self._track_chain(chain)
 
-    async def init(self, symbols: List[Symbols]):
+    async def init(self, symbols: List[Symbol]):
         self.symbols = symbols
         self.lock = Lock()
         await subscribe(await create_key_for_profit_chain_pubsub(self.symbols), self.handle_message)

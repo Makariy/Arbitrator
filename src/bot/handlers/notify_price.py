@@ -1,7 +1,7 @@
 import logging
 from aiogram import types
 
-from lib.symbols import Symbols
+from lib.symbol import Symbol
 
 from bot.services.utils import auth_required
 from bot.services.user.models import Directions, User
@@ -29,7 +29,7 @@ async def handle_create_price_limit_notification(message: types.Message, user: U
         if len(args) != 3:
             raise ValueError(f"Arguments count is not 3: len(args) == {len(args)}")
 
-        symbol = Symbols(args[0])
+        symbol = Symbol(args[0])
         limit = float(args[1])
         direction = Directions(args[2].upper())
 
@@ -41,7 +41,7 @@ async def handle_create_price_limit_notification(message: types.Message, user: U
         user.telegram_id,
         exchange=NOTIFICATION_EXCHANGE,
         intput_symbol=symbol,
-        output_symbol=Symbols.USDT,
+        output_symbol=Symbol.USDT,
         limit=limit,
         direction=direction
     )

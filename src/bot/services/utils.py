@@ -2,15 +2,15 @@ from typing import Optional, Callable, Coroutine
 
 from aiogram import types
 
-from lib.exchanges import Exchanges
-from lib.symbols import Symbols
+from lib.platform import Platform
+from lib.symbol import Symbol
 from layers.analyzer.token_exchanges_fetcher import get_token_exchanges
 
 from .user.models import User
 from .user.db_services import get_user_from_db_by_telegram_id
 
 
-async def get_current_price(exchange: Exchanges, input: Symbols, output: Symbols) -> Optional[float]:
+async def get_current_price(exchange: Platform, input: Symbol, output: Symbol) -> Optional[float]:
     exchanges = await get_token_exchanges(exchange, input, output)
     if exchanges:
         current_exchange = exchanges.token_exchanges[0]
